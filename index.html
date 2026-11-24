@@ -8,27 +8,27 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="地図あつめ"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="てくてく地図"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
-<meta name="description" content="走った道が線になって、地図のピースが埋まっていく。県や国の形を走って、日本地図・世界地図を完成させよう。">
-<meta property="og:type" content="website"><meta property="og:site_name" content="はしって地図あつめ">
-<meta property="og:title" content="はしって地図あつめ — 走って日本地図を完成させよう">
-<meta property="og:description" content="走った道が線になって、地図のピースが埋まっていく。県や国の形のコースを自動で作ります。">
+<meta name="description" content="歩いた道・走った道が線になって、地図のピースが埋まっていく。県や国の形を歩いて・走って、日本地図・世界地図を完成させよう。">
+<meta property="og:type" content="website"><meta property="og:site_name" content="てくてく地図あつめ">
+<meta property="og:title" content="てくてく地図あつめ — 歩いて・走って日本地図を完成させよう">
+<meta property="og:description" content="歩いた道・走った道が線になって、地図のピースが埋まっていく。県や国の形のコースを自動で作ります。">
 <meta property="og:url" content="https://af22091.github.io/hashitte-chizu/">
 <meta property="og:image" content="https://af22091.github.io/hashitte-chizu/ogp.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="はしって地図あつめ"><meta name="twitter:description" content="走った道が線になって、日本地図が完成していく。">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="てくてく地図あつめ"><meta name="twitter:description" content="歩いた道が線になって、日本地図が完成していく。">
 <meta name="twitter:image" content="https://af22091.github.io/hashitte-chizu/ogp.png">
-<title>はしって地図あつめ</title>
+<title>てくてく地図あつめ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
 <link rel="stylesheet" href="lib/leaflet/leaflet.css">
 <link rel="stylesheet" href="lib/maplibre/maplibre-gl.css">
-<link rel="stylesheet" href="css/style.css?v=20261124b">
+<link rel="stylesheet" href="css/style.css?v=20261124c">
 </head>
 <body>
 <header id="top">
   <button id="btn-home" class="icon" aria-label="モード選択へ" title="モード選択へ" hidden>◀</button>
-  <h1>はしって地図あつめ</h1>
+  <h1>てくてく地図あつめ</h1>
   <button id="btn-music" class="icon" aria-label="音楽のオン・オフ" title="音楽">♪</button>
   <div id="counter" title="完成した数" hidden><b id="count-done">0</b> / <span id="count-total">47</span></div>
   <button id="btn-settings" class="icon" aria-label="設定" title="設定"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.37 3.37"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg></button>
@@ -46,7 +46,7 @@
   <!-- 0. モード選択 -->
   <section id="screen-home" class="screen active">
     <h2 class="home-lead">どの地図を走る？</h2>
-    <p class="home-sub">走った道が線になって、地図のピースが埋まっていきます。</p>
+    <p class="home-sub">歩いた道・走った道が線になって、地図のピースが埋まっていきます。</p>
     <div id="home-cards"><div class="skel-card"></div><div class="skel-card"></div></div>
     <div class="home-quick"><button id="home-list" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="3" y="4.5" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="3" y="15.5" width="4" height="4" rx="1"/></g><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10.5 6.5H21"/><path d="M10.5 12H21"/><path d="M10.5 17.5H17"/></g></svg><span>きろく</span><small id="home-stat"></small></button><button id="home-help" type="button">使い方・注意</button></div>
   </section>
@@ -193,21 +193,21 @@ window.addEventListener('error', function (e) {
 </script>
 <script>
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && (!navigator.webdriver || /sw=1/.test(location.search))) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js?v=20261124b').catch(() => { /* 非対応・失敗: 通常のWebとして動く */ }); });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js?v=20261124c').catch(() => { /* 非対応・失敗: 通常のWebとして動く */ }); });
 }
 </script>
 <script src="lib/leaflet/leaflet.js"></script>
 <script src="lib/maplibre/maplibre-gl.js"></script>
 <script src="lib/maplibre/leaflet-maplibre-gl.js"></script>
-<script src="js/i18n.js?v=20261124b"></script>
-<script src="js/theme.js?v=20261124b"></script>
-<script src="js/music.js?v=20261124b"></script>
-<script src="js/trivia.js?v=20261124b"></script>
-<script src="js/game.js?v=20261124b"></script>
-<script src="data/embedded.js?v=20261124b"></script>
-<script src="js/route.js?v=20261124b"></script>
-<script src="js/fx.js?v=20261124b"></script>
-<script src="js/kbd.js?v=20261124b"></script>
-<script src="js/app.js?v=20261124b"></script>
+<script src="js/i18n.js?v=20261124c"></script>
+<script src="js/theme.js?v=20261124c"></script>
+<script src="js/music.js?v=20261124c"></script>
+<script src="js/trivia.js?v=20261124c"></script>
+<script src="js/game.js?v=20261124c"></script>
+<script src="data/embedded.js?v=20261124c"></script>
+<script src="js/route.js?v=20261124c"></script>
+<script src="js/fx.js?v=20261124c"></script>
+<script src="js/kbd.js?v=20261124c"></script>
+<script src="js/app.js?v=20261124c"></script>
 </body>
 </html>

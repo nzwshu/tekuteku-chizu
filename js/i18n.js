@@ -17,8 +17,8 @@
 
   const EXACT = {
     // ---- 画面の見出し・ボタン ----
-    'はしって地図あつめ': 'Run & Collect Maps', 'はしって日本地図': 'Run Japan', 'はしって世界地図': 'Run the World',
-    'どの地図を走る？': 'Which map will you run?', '走った道が線になって、地図のピースが埋まっていきます。': 'Your run becomes a line, and the map pieces fill in.',
+    'てくてく地図あつめ': 'Tekuteku Maps', 'てくてく日本地図': 'Tekuteku Japan', 'てくてく世界地図': 'Tekuteku World',
+    'どの地図を走る？': 'Which map will you run?', '歩いた道・走った道が線になって、地図のピースが埋まっていきます。': 'Your walk or run becomes a line, and the map pieces fill in.',
     '日本': 'Japan', '世界': 'World', '日本地図': 'Japan map', '世界地図': 'World map', '県': 'prefecture', '国': 'country',
     '設定': 'Settings', '記録一覧': 'Records', 'きろく': 'Records', '合計距離': 'Total distance', '走った回数': 'Runs', '連続日数': 'Day streak', '⚙ 設定': '⚙ Settings', '記録一覧（走った場所）': 'Records (where you ran)',
     '走りたい県をタップ。ピンチで拡大もできます': 'Tap a prefecture to run. Pinch to zoom.', '走りたい県をタップしてください': 'Tap a prefecture to run',
@@ -123,7 +123,7 @@
     [/^位置情報エラー: (.*)$/, (m, e) => `Location error: ${e}`],
     [/^現在地を取得できませんでした: (.*)$/, (m, e) => `Could not get your location: ${e}`],
     [/^読み込めませんでした: (.*)$/, (m, e) => `Could not import: ${e}`],
-    [/^はしって地図あつめ　バージョン (.+)$/, (m, v) => `Run & Collect Maps  v${v}`],
+    [/^てくてく地図あつめ　バージョン (.+)$/, (m, v) => `Tekuteku Maps  v${v}`],
     [/^(.*)。大きさを「小」にするか、道路の少ない場所で試すか、少し待ってからもう一度お試しください。「デモ」ならネットなしで動きます。$/, (m, e) => `${tr(e)}. Try size “S”, a place with more roads, or wait a bit and retry. “Demo” works without internet.`],
     [/^道路データを取得中…（(.+)）$/, (m, h) => `Fetching road data… (${h})`],
     [/^(\d+)秒で時間切れ$/, (m, s) => `timed out after ${s}s`],

@@ -1,4 +1,4 @@
-/* はしって日本地図 — 画面とアプリの流れ */
+/* てくてく日本地図 — 画面とアプリの流れ */
 (() => {
   'use strict';
   const RE = window.RouteEngine;
@@ -35,9 +35,9 @@
 
   /* ---------- モード(日本 / 世界) ---------- */
   const MODES = {
-    jp: { key: 'jp', title: 'はしって日本地図', home: '日本', file: 'data/prefectures.json', runs: 'runs', unit: '県', font: 8.5,
+    jp: { key: 'jp', title: 'てくてく日本地図', home: '日本', file: 'data/prefectures.json', runs: 'runs', unit: '県', font: 8.5,
       hint: '走りたい県をタップ。ピンチで拡大もできます', searchPh: '県の名前で探す' },
-    world: { key: 'world', title: 'はしって世界地図', home: '世界', file: 'data/world.json', runs: 'worldRuns', unit: '国', font: 7,
+    world: { key: 'world', title: 'てくてく世界地図', home: '世界', file: 'data/world.json', runs: 'worldRuns', unit: '国', font: 7,
       hint: '走りたい国をタップ。ピンチで拡大・検索もできます', searchPh: '国の名前で探す(日本語・英語)' },
   };
   const MAX_SIZE_M = 3000;                                 // 細長い国で拡大しても、道路取得が重くならない上限
@@ -370,7 +370,7 @@
     { const sc = $('#screen-' + name); if (sc) { if (name === 'map') FX.reveal(sc); else sc.classList.remove('enter'), void sc.offsetWidth, sc.classList.add('enter'); } }
     if (name !== 'map') Music.scene('calm');
     $('#counter').hidden = name === 'home';
-    if (name === 'home') { $('#top h1').textContent = 'はしって地図あつめ'; document.title = 'はしって地図あつめ'; }
+    if (name === 'home') { $('#top h1').textContent = 'てくてく地図あつめ'; document.title = 'てくてく地図あつめ'; }
   }
   function ensureMap() {
     if (map) return;
@@ -1115,7 +1115,7 @@
     rr(86, 96, 920, 780, 48); c.fillStyle = 'rgba(28,27,34,.55)'; c.fill();
     rr(70, 80, 920, 780, 48); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 8; c.strokeStyle = INK; c.stroke();
     c.textAlign = 'center'; c.fillStyle = INK; c.font = `900 66px ${F}`;
-    c.fillText(en ? `${p.name} done!` : `${p.name}を走りました！`, W / 2 - 10, 190);
+    c.fillText(en ? `${p.name} done!` : `${p.name}を歩いて・走りました！`, W / 2 - 10, 190);
     // 走った道(線)
     const all = r.trail.concat(r.planned || []), lat0 = all.reduce((q, t) => q + t[0], 0) / all.length, lon0 = all.reduce((q, t) => q + t[1], 0) / all.length;
     const loc = pts => pts.map(t => RE.toLocal(t[0], t[1], lat0, lon0)), A = loc(r.trail), B = r.planned ? loc(r.planned) : [];
@@ -1130,7 +1130,7 @@
     c.fillText(`${fmtKm(r.distanceM)}　${fmtTime(r.durationS)}`, W / 2 - 10, 800);
     const total = mk === 'jp' ? 47 : 175, nDone = Object.keys(runsOf(mk)).length;
     c.font = `900 54px ${F}`; c.fillText((mk === 'jp' ? (en ? 'Japan' : '日本地図') : (en ? 'World' : '世界地図')) + `　${nDone} / ${total}`, W / 2, 940);
-    c.font = `700 40px ${F}`; c.fillText('#はしって地図あつめ', W / 2, 1000); c.font = `700 30px ${F}`; c.fillText(SITE_URL.replace('https://', ''), W / 2, 1044);
+    c.font = `700 40px ${F}`; c.fillText('#てくてく地図あつめ', W / 2, 1000); c.font = `700 30px ${F}`; c.fillText(SITE_URL.replace('https://', ''), W / 2, 1044);
     return cv;
   }
   async function shareRun(id, mk) {
@@ -1139,7 +1139,7 @@
     const cv = shareCanvas(id, mk), blob = await new Promise(r => cv.toBlob(r, 'image/png'));
     if (!blob) return toast('画像を作れませんでした');
     const file = new File([blob], 'hashitte-chizu.png', { type: 'image/png' });
-    const text = en ? `I ran ${p.name}! #HashitteChizu` : `${p.name}を走って完成させました！ #はしって地図あつめ`;
+    const text = en ? `I ran ${p.name}! #TekutekuMaps` : `${p.name}を歩いて・走って完成させました！ #てくてく地図あつめ`;
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, url: SITE_URL }); return; }
     } catch (e) { if (e && e.name === 'AbortError') return; /* 共有できない端末: 保存にきりかえ */ }
@@ -1256,7 +1256,7 @@
       `<h3>記録のデータ</h3><div class="set-row"><div class="set-l"><b>走った記録</b><small>${nm}件</small></div></div>` +
       `<div class="set-btns"><button id="set-list"><span>きろく</span></button><button id="set-export"><span>書き出す</span></button><button id="set-import"><span>読み込む</span></button></div>` +
       `<div class="set-btns"><button id="set-reset" class="danger">すべて消す</button></div>` +
-      `<h3>このアプリについて</h3><div class="set-about">はしって地図あつめ　バージョン ${APP_VER}<br>走った道をつないで、地図のピースを集めるアプリです。<br><br>` +
+      `<h3>このアプリについて</h3><div class="set-about">てくてく地図あつめ　バージョン ${APP_VER}<br>走った道をつないで、地図のピースを集めるアプリです。<br><br>` +
       `位置情報は、コース作りと走行の記録のためだけに使い、この端末の外へは保存しません（地図と道路データの取得のために、場所の周辺の範囲を地図サービスへ送ります）。記録はこの端末のブラウザの中だけに保存されます。<br><br>` +
       `地図データ © OpenStreetMap contributors ／ 航空写真 © Esri, Maxar, Earthstar Geographics ／ 地名 Nominatim ／ 3D地図 OpenFreeMap・MapLibre</div></div>`;
     $('#modal').hidden = false;

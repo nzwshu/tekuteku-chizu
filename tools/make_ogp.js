@@ -12,6 +12,6 @@ h1{position:absolute;left:64px;top:150px;margin:0;font-size:92px;line-height:1.1
 p{position:absolute;left:68px;top:420px;margin:0;font-size:36px;font-weight:700;line-height:1.5}
 .tag{position:absolute;left:68px;top:540px;background:#1c1b22;color:#ffd84a;border-radius:40px;padding:10px 28px;font-size:30px;font-weight:900}
 </style><svg class="map" viewBox="0 0 ${vw} ${vh}" xmlns="http://www.w3.org/2000/svg">${paths}</svg>
-<h1>はしって<br>地図あつめ</h1><p>走った道が線になって、<br>日本地図が完成していく</p><div class="tag">ランニング × 地図パズル</div>`;
+<h1>てくてく<br>地図あつめ</h1><p>歩いた道・走った道が線になって、<br>日本地図が完成していく</p><div class="tag">ウォーキング × ランニング × 地図パズル</div>`;
 (async () => { const b = await chromium.launch(); const pg = await b.newPage({ viewport: { width: 1200, height: 630 } });
   await pg.setContent(html); console.log(await pg.evaluate(() => { const s = document.querySelector('svg'); const r = s.getBoundingClientRect(); return [document.querySelectorAll('path').length, r.x, r.y, r.width, r.height, getComputedStyle(s).display]; })); await pg.waitForTimeout(500); await pg.screenshot({ path: path.join(__dirname, '..', 'ogp.png') }); await b.close(); })();
