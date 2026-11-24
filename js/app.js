@@ -15,7 +15,7 @@
   /* 検索欄のキーボード: かなの読みから、県・国の候補を出す */
   const PREF_YOMI = { '北海道': 'ほっかいどう', '青森': 'あおもり', '岩手': 'いわて', '宮城': 'みやぎ', '秋田': 'あきた', '山形': 'やまがた', '福島': 'ふくしま', '茨城': 'いばらき', '栃木': 'とちぎ', '群馬': 'ぐんま', '埼玉': 'さいたま', '千葉': 'ちば', '東京': 'とうきょう', '神奈川': 'かながわ', '新潟': 'にいがた', '富山': 'とやま', '石川': 'いしかわ', '福井': 'ふくい', '山梨': 'やまなし', '長野': 'ながの', '岐阜': 'ぎふ', '静岡': 'しずおか', '愛知': 'あいち', '三重': 'みえ', '滋賀': 'しが', '京都': 'きょうと', '大阪': 'おおさか', '兵庫': 'ひょうご', '奈良': 'なら', '和歌山': 'わかやま', '鳥取': 'とっとり', '島根': 'しまね', '岡山': 'おかやま', '広島': 'ひろしま', '山口': 'やまぐち', '徳島': 'とくしま', '香川': 'かがわ', '愛媛': 'えひめ', '高知': 'こうち', '福岡': 'ふくおか', '佐賀': 'さが', '長崎': 'ながさき', '熊本': 'くまもと', '大分': 'おおいた', '宮崎': 'みやざき', '鹿児島': 'かごしま', '沖縄': 'おきなわ' };
   const WORLD_YOMI = { 'アメリカ合衆国': 'あめりかがっしゅうこく', '中華人民共和国': 'ちゅうかじんみんきょうわこく', 'コンゴ民主共和国': 'こんごみんしゅきょうわこく', 'モンゴル国': 'もんごるこく', '南アフリカ共和国': 'みなみあふりかきょうわこく', 'マリ共和国': 'まりきょうわこく', '南スーダン': 'みなみすーだん', '中央アフリカ共和国': 'ちゅうおうあふりかきょうわこく', 'タイ王国': 'たいおうこく', '日本': 'にほん', 'コンゴ共和国': 'こんごきょうわこく', '朝鮮民主主義人民共和国': 'ちょうせんみんしゅしゅぎじんみんきょうわこく', '大韓民国': 'だいかんみんこく', '西サハラ': 'にしさはら', 'アラブ首長国連邦': 'あらぶしゅちょうこくれんぽう', 'ドミニカ共和国': 'どみにかきょうわこく', '中華民国': 'ちゅうかみんこく', '赤道ギニア': 'せきどうぎにあ', '北マケドニア': 'きたまけどにあ', 'フォークランド諸島': 'ふぉーくらんどしょとう', 'コソボ共和国': 'こそぼきょうわこく', 'ソロモン諸島': 'そろもんしょとう', '東ティモール': 'ひがしてぃもーる', '北キプロス・トルコ共和国': 'きたきぷろすとるこきょうわこく' };
-  Kbd.setCandidates(q => {
+  const candFn = q => {
     q = (q || '').trim(); if (!q || !cur || !DATAS[cur]) return [];
     const k = Kbd.kata(q), lq = q.toLowerCase(), out = [];
     for (const p of DATAS[cur].prefs) {
@@ -23,8 +23,11 @@
       if (p.name.includes(q) || (p.en && p.en.toLowerCase().includes(lq)) || (yomi && yomi.startsWith(k)) || (cur === 'world' && Kbd.kata(p.name).startsWith(k))) out.push({ label: I18N.lang === 'en' && p.en ? p.en : p.name, value: p.name });
     }
     return out;
-  });
-  Kbd.setMode(settings.kbd);
+  };
+  Kbd.setCandidates(candFn);
+  /* 端末のキーボードのときの候補: 入力した文字に合うものだけを出す(未入力では、何も出さない)。アプリ用キーボードは、専用の候補バーを使う */
+  const fillList = () => { const dl = document.getElementById('search-list'), i = document.getElementById('search'); if (!dl || !i) return; const m = settings.kbd; dl.innerHTML = (m === 'flick' || m === 'qwerty') ? '' : candFn(i.value).slice(0, 8).map(c => `<option value="${c.value}">${c.label === c.value ? '' : c.label}</option>`).join(''); };
+  Kbd.setMode(settings.kbd); fillList();
   const U = () => (settings.units === 'mi' ? { f: 0.621371, n: 'mi' } : { f: 1, n: 'km' });
   const kmTxt = (km, d = 1) => (km * U().f).toFixed(d) + U().n;
   const buzz = p => { if (settings.vibrate && navigator.vibrate) try { navigator.vibrate(p); } catch (e) { /* なし */ } };
@@ -138,7 +141,7 @@
     cur = mk; const D = DATAS[mk]; data = D.data; prefs = D.prefs; byId = D.byId; selectedId = null;
     const [x0, y0, w, h] = data.viewBox; base = { x: x0, y: y0, w, h }; view = Object.assign({}, base);
     $('#search').value = ''; $('#search').placeholder = MODES[mk].searchPh;
-    $('#search-list').innerHTML = prefs.map(p => `<option value="${p.name}">${p.en || ''}</option>`).join('');
+    fillList();
     $('#board-hint').textContent = MODES[mk].hint;
     show('board'); renderBoard();
     fitBase();
@@ -319,6 +322,7 @@
     const vv = window.visualViewport, upd = () => document.documentElement.style.setProperty('--kb', Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) + 'px');
     vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); upd();
   }
+  $('#search').addEventListener('input', fillList);
   $('#search').addEventListener('change', doSearch);
   $('#search').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
@@ -1277,7 +1281,7 @@
     const sb = e.target.closest('.seg button');
     if (sb) {
       const key = sb.parentElement.dataset.seg; sb.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === sb));
-      if (key === 'lang') { I18N.setLang(sb.dataset.v); return; } else if (key === 'theme') Theme.setMode(sb.dataset.v); else { settings[key] = sb.dataset.v; saveSettings(); if (key === 'kbd') Kbd.setMode(sb.dataset.v); if (cur && key === 'units') { refreshAfterUnits(); } }
+      if (key === 'lang') { I18N.setLang(sb.dataset.v); return; } else if (key === 'theme') Theme.setMode(sb.dataset.v); else { settings[key] = sb.dataset.v; saveSettings(); if (key === 'kbd') { Kbd.setMode(sb.dataset.v); fillList(); } if (cur && key === 'units') { refreshAfterUnits(); } }
       return;
     }
     const id = (e.target.closest('button') || e.target).id;
