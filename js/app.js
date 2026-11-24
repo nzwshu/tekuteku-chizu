@@ -1109,7 +1109,7 @@
     if (el) { el.classList.remove('flash'); void el.getBoundingClientRect(); el.classList.add('flash'); }
   }
   /* ---------- 共有用の画像(Xなどに投稿できる1080×1080) ---------- */
-  const SITE_URL = 'https://af22091.github.io/hashitte-chizu/';
+  const SITE_URL = 'https://nzwshu.github.io/hashitte-chizu/';
   function shareCanvas(id, mk) {
     const p = prefOf(mk, id), r = runsOf(mk)[id], en = window.I18N && I18N.lang === 'en';
     const W = 1080, cv = document.createElement('canvas'); cv.width = cv.height = W; const c = cv.getContext('2d');
