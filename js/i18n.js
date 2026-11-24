@@ -42,6 +42,7 @@
     '📍 地名を取得中…': '📍 Looking up place…', '📍 地名: 未取得': '📍 Place: not fetched', '取得する': 'Fetch', '形の難しさ': 'Shape difficulty', '（デモの記録）': '(demo record)', '記録を見る': 'View record', 'もう一度たどる': 'Run again',
     'ようこそ！': 'Welcome!', 'たどりたい県（国）を選んで、スタート地点を決める': 'Pick a prefecture (country) and set your start point', '道にそった「絵のコース」が自動でできる': 'A picture-shaped course along real roads is made for you', '実際に走ると、道が線でつながってピースが完成！': 'Run it, and your path draws the shape to complete the piece!',
     'いまアプリ内のブラウザで開いているかもしれません。右上のメニューから「Safari（ブラウザ）で開く」を選ぶと、記録が消えにくくなります。': 'You may be in an in-app browser. Choose "Open in Safari (browser)" from the top-right menu so your records are less likely to disappear.',
+    '形は、道を走りやすいように簡略化しています。小さな島や離島、飛び地などは省いている県・国があります。': 'Shapes are simplified so they are easier to trace on roads. Some prefectures and countries omit small islands, remote islands and enclaves.',
     '歩く・走るときは交通ルールを守り、立ち入れない場所には入らないでください。': 'Follow traffic rules and stay out of places you are not allowed to enter.', '走った記録はこの端末の中にだけ保存します。コース作成のため、スタート付近の地図データを外部の地図サービスから取得します。': 'Your run records are saved only on this device. To make a course, map data near the start is fetched from external map services.',
     '歩いて・走っている間は、画面をつけたままにしてください。': 'Keep the screen on while you run.', '記録はこのブラウザに保存されます。Safariで開いて「ホーム画面に追加」しておくと安心です。': 'Records are saved in this browser. Opening in Safari and using "Add to Home Screen" is safer.',
     'はじめる': 'Start', '使い方・注意': 'How to use', 
