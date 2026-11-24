@@ -1241,7 +1241,7 @@
     $('#menu').hidden = true;
     const nm = (save.runs ? Object.keys(save.runs).length : 0) + (save.worldRuns ? Object.keys(save.worldRuns).length : 0);
     $('#modal-card').innerHTML = `<div class="set-head"><h2>設定</h2><button id="set-close" class="link">とじる</button></div><div class="set-body">` +
-      `<h3>プロフィール</h3><div class="set-row col"><div class="set-l"><b>ニックネーム</b><small>ホームの見出しに表示されます（この端末の中だけに保存）</small></div><input id="set-nick" type="text" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="12" placeholder="例: しゅう" value="${esc(settings.nick)}"></div>` +
+      `<h3>プロフィール</h3><div class="set-row col"><div class="set-l"><b>ニックネーム</b><small>ホームの見出しに表示されます（この端末の中だけに保存）</small></div><input id="set-nick" type="text" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="12" placeholder="例: ランナー" value="${esc(settings.nick)}"></div>` +
       `<h3>表示</h3>` + sg('theme', '画面の色', [['auto', '自動'], ['morning', '朝'], ['day', '昼'], ['evening', '夕方'], ['night', '夜']], Theme.mode(), '自動は、いる場所の日の出・日没に合わせて変わります') +
       sg('lang', '言語', [['ja', '日本語'], ['en', 'English']], I18N.lang) +
       sg('kbd', '入力キーボード', [['system', '端末のもの'], ['flick', 'フリック'], ['qwerty', 'QWERTY']], settings.kbd, 'アプリ内のキーボードで検索欄に入力します') +

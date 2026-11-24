@@ -71,7 +71,7 @@
     '（先に「記録を書き出す」でバックアップできます）': '(You can back up first with “Export records”.)', '音声案内をオンにしました': 'Voice guidance is on',
     '北': 'N', '北東': 'NE', '東': 'E', '南東': 'SE', '南': 'S', '南西': 'SW', '西': 'W', '北西': 'NW', 'Uターン': 'U-turn',
     // ---- 設定 ----
-    'プロフィール': 'Profile', 'ニックネーム': 'Nickname', 'ホームの見出しに表示されます（この端末の中だけに保存）': 'Shown on the Home screen (saved only on this device)', '例: しゅう': 'e.g. Sam',
+    'プロフィール': 'Profile', 'ニックネーム': 'Nickname', 'ホームの見出しに表示されます（この端末の中だけに保存）': 'Shown on the Home screen (saved only on this device)', '例: ランナー': 'e.g. Runner',
     '表示': 'Display', '画面の色': 'Color theme', '自動': 'Auto', '朝': 'Morning', '昼': 'Day', '夕方': 'Evening', '夜': 'Night', '自動は、いる場所の日の出・日没に合わせて変わります': 'Auto follows sunrise and sunset where you are.',
     '距離の単位': 'Distance unit', 'キロメートル': 'Kilometers', 'マイル': 'Miles', '音': 'Sound', 'BGMの音量': 'Music volume', '効果音': 'Sound effects', 'コース完成・ゴールの音': 'Sounds for finishing a course or reaching the goal', 'ボタンの音': 'Button sounds', '押したときの、やわらかい「ぽん」という音': 'A soft “pop” when you tap a button',
     '走るとき': 'While running', '開いたら現在地にピンを立てる': 'Place the pin at my location on open', '位置情報の許可が必要です': 'Needs location permission', 'スタートで自分視点のナビ表示にする': 'Use navigation view when starting',
