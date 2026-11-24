@@ -24,9 +24,18 @@
     void base;
     return { rise: toLocalMin(riseUTC), set: toLocalMin(setUTC) };
   }
-  let mode = 'auto'; try { mode = localStorage.getItem('hashitte-theme-mode') || 'auto'; } catch (e) { /* 自動 */ }
+  /* 画面の色(選べる色)。sea=背景、glow=中央のうっすら明るい部分、dark=暗い背景(文字を明るくする) */
+  const COLORS = {
+    yellow: { sea: '#ffd84a', glow: '#ffe680' }, orange: { sea: '#ff9a5c', glow: '#ffc58f' }, red: { sea: '#ff6b6b', glow: '#ffa8a8' },
+    pink: { sea: '#ff9ad5', glow: '#ffcdea' }, green: { sea: '#6fd08c', glow: '#b7ecc6' }, sky: { sea: '#7fd3f0', glow: '#c4ecfa' },
+    blue: { sea: '#6f9bff', glow: '#b5cdff' }, purple: { sea: '#b08cff', glow: '#d9c7ff' }, white: { sea: '#ebe8e1', glow: '#ffffff' },
+    black: { sea: '#26242c', glow: '#3d3a47', dark: true },
+  };
+  const LEGACY = { morning: 'yellow', day: 'yellow', evening: 'orange', night: 'black' };   // 以前の「朝・昼・夕方・夜」の選択は、近い色に引きつぐ
+  let mode = 'yellow'; try { mode = localStorage.getItem('hashitte-theme-mode') || 'yellow'; } catch (e) { /* 黄 */ }
+  if (LEGACY[mode]) mode = LEGACY[mode]; if (mode !== 'auto' && !COLORS[mode]) mode = 'yellow';
   function phase(now) {
-    const q = new URLSearchParams(location.search).get('tod') || (mode !== 'auto' ? mode : null);
+    const q = new URLSearchParams(location.search).get('tod');
     if (['morning', 'day', 'evening', 'night'].includes(q)) return q;
     const s = sun(now, loc[0], loc[1]);
     if (!s.rise && s.polar) return s.polar;
@@ -38,12 +47,18 @@
   }
   const META = { morning: '#ffd9b0', day: '#ffd84a', evening: '#ff9a5c', night: '#2b2140' };
   function apply() {
-    const p = phase(new Date());
-    document.documentElement.dataset.tod = p;
-    const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = META[p];
-    return p;
+    const root = document.documentElement, st = root.style, c = COLORS[mode];
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (mode === 'auto' || !c) {                                  // 自動: いる場所の日の出・日没に合わせて、朝・昼・夕方・夜で変わる
+      ['--sea', '--glow', '--on-bg', '--sh'].forEach(k => st.removeProperty(k));
+      const p = phase(new Date()); root.dataset.tod = p; if (m) m.content = META[p]; return p;
+    }
+    st.setProperty('--sea', c.sea); st.setProperty('--glow', c.glow);
+    if (c.dark) { st.setProperty('--on-bg', '#fff3c4'); st.setProperty('--sh', '#0d0b12'); } else { st.removeProperty('--on-bg'); st.removeProperty('--sh'); }
+    root.dataset.tod = c.dark ? 'night' : 'day'; if (m) m.content = c.sea; return root.dataset.tod;
   }
   root.Theme = {
+    colors: COLORS,
     apply, mode: () => mode, setMode(v) { mode = v; try { localStorage.setItem('hashitte-theme-mode', v); } catch (e) { /* なし */ } apply(); }, phase: () => document.documentElement.dataset.tod,
     setLocation(lat, lon) { if (!isFinite(lat) || !isFinite(lon)) return; loc = [lat, lon]; try { localStorage.setItem(KEY, JSON.stringify(loc)); } catch (e) { /* なし */ } apply(); },
   };

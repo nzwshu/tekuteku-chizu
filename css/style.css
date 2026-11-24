@@ -535,3 +535,12 @@ html.kbd-on #modal { padding-bottom: calc(var(--kbd, 0px) + 12px); } html.kbd-on
 .wl-notes { text-align: left; margin: 8px 0 0; padding-left: 20px; font-size: 13px; line-height: 1.65; color: var(--muted, #5b5866); }
 .wl-warn { background: #fff3b8; border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; font-size: 13px; font-weight: 700; text-align: left; margin: 8px 0; }
 .share-btn { background: #ffd84a; }
+
+/* 画面の色の選択(丸いスウォッチ) */
+.seg.swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 6px; background: none; padding: 0; border-radius: 0; width: 100%; }
+.seg.swatches .sw { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border: 2px solid transparent; border-radius: 12px; background: #fff; box-shadow: none; font-size: 12px; font-weight: 700; }
+.seg.swatches .sw i { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--ink); display: block; }
+.seg.swatches .sw.on { border-color: var(--ink); background: #fff3b8; box-shadow: 2px 2px 0 var(--ink); }
+.seg.swatches { border: 0; box-shadow: none; outline: 0; }
+.seg.swatches .sw, .seg.swatches .sw.on { color: var(--ink); }
+.seg.swatches .sw span { color: var(--ink); }

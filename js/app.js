@@ -36,9 +36,9 @@
   /* ---------- モード(日本 / 世界) ---------- */
   const MODES = {
     jp: { key: 'jp', title: 'てくてく日本地図', home: '日本', file: 'data/prefectures.json', runs: 'runs', unit: '県', font: 8.5,
-      hint: '走りたい県をタップ。ピンチで拡大もできます', searchPh: '県の名前で探す' },
+      hint: 'たどりたい県をタップ。ピンチで拡大もできます', searchPh: '県の名前で探す' },
     world: { key: 'world', title: 'てくてく世界地図', home: '世界', file: 'data/world.json', runs: 'worldRuns', unit: '国', font: 7,
-      hint: '走りたい国をタップ。ピンチで拡大・検索もできます', searchPh: '国の名前で探す(日本語・英語)' },
+      hint: 'たどりたい国をタップ。ピンチで拡大・検索もできます', searchPh: '国の名前で探す(日本語・英語)' },
   };
   const MAX_SIZE_M = 3000;                                 // 細長い国で拡大しても、道路取得が重くならない上限
   let cur = null;                                          // いま開いているモード('jp' / 'world' / null=ホーム)
@@ -123,7 +123,7 @@
   }
   function renderHome() {
     renderHomeStat();
-    $('.home-lead').textContent = settings.nick ? `${settings.nick}さん、どの地図を走る？` : 'どの地図を走る？';
+    $('.home-lead').textContent = settings.nick ? `${settings.nick}さん、どの地図をたどる？` : 'どの地図をたどる？';
     $('#home-cards').innerHTML = Object.values(MODES).map(m => {
       const D = DATAS[m.key], n = Object.keys(runsOf(m.key)).filter(id => D.byId[id]).length, tot = D.prefs.length;
       return `<button class="mode-card stag" style="--i:${m.key === 'world' ? 1 : 0}" data-mode="${m.key}"><div class="mode-thumb">${thumb(m.key)}</div>` +
@@ -335,10 +335,10 @@
     if (run) {
       body += `<div class="sheet-body-row"><div class="trail-prev">${trailSvg(run.trail, COLORS[p.color], run.planned, 110)}</div>` +
         `<div class="facts" id="sh-facts">完成 ${fmtDate(run.date)}<br>距離 ${fmtKm(run.distanceM)}<br>時間 ${fmtTime(run.durationS)}<span id="sh-place">${placeHtml(run, cur + id)}</span>${run.demo ? '<br><span class="muted">（デモの記録）</span>' : ''}</div></div>` +
-        `<div class="sheet-actions"><button id="sh-view">記録を見る</button><button class="primary" id="sh-run">もう一度走る</button></div>`;
+        `<div class="sheet-actions"><button id="sh-view">記録を見る</button><button class="primary" id="sh-run">もう一度たどる</button></div>`;
     } else {
       body += `<div class="facts" style="margin:10px 0">目安の距離: 小 約${kmTxt(estKm(p, 's'))} ／ 中 約${kmTxt(estKm(p, 'm'))} ／ 大 約${kmTxt(estKm(p, 'l'))}</div>` +
-        `<div class="sheet-actions"><button class="primary" id="sh-run">この${u}を走る</button></div>`;
+        `<div class="sheet-actions"><button class="primary" id="sh-run">この${u}をたどる</button></div>`;
     }
     $('#sheet-body').innerHTML = body; $('#sheet').hidden = false;
     $('#sh-run').onclick = () => openPlan(id);
@@ -446,7 +446,7 @@
     plan.pref = byId[id]; plan.routes = []; plan.sel = 0;
     show('map'); runLayer.clearLayers(); planLayer.clearLayers();
     $('#panel-run').hidden = true; $('#panel-plan').hidden = false;
-    $('#plan-title').textContent = plan.pref.name + ' を走る'; plan.mk = cur;
+    $('#plan-title').textContent = plan.pref.name + ' をたどる'; plan.mk = cur;
     $('#plan-results').hidden = true; $('#plan-msg').textContent = ''; $('#loading').hidden = true;
     $('#panel-plan').classList.remove('compact'); $('#btn-opts').hidden = true;
     setStart(save.lastStart || DEFAULT_START, true);
@@ -492,7 +492,7 @@
   }
   function updateEst() {
     const p = plan.pref; if (!p) return;
-    $('#plan-est').textContent = `${kmTxt(sizeOf(p, plan.size) / 1000)}四方・走る距離の目安 約${kmTxt(estKm(p, plan.size))}`;
+    $('#plan-est').textContent = `${kmTxt(sizeOf(p, plan.size) / 1000)}四方・たどる距離の目安 約${kmTxt(estKm(p, plan.size))}`;
   }
   $('#size-seg').addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b || b.dataset.s === plan.size) return;
@@ -560,11 +560,11 @@
   }
   /* 待ち時間の演出: 走る形が線で描かれ、その上を点が走る。ヒントも入れ替わる */
   const TIPS = [
-    '赤い線が、これから走る道です。紫の点線が目標の形。',
+    '赤い線が、これからたどる道です。紫の点線が目標の形。',
     '案は3つ作ります。再現度が高いものを選びましょう。',
-    '大きさを「小」にすると、短い距離で走れます。',
+    '大きさを「小」にすると、短い距離でたどれます。',
     '道が少ない場所だと、形が崩れやすくなります。',
-    '走り終えると、走った場所の地名も記録されます。',
+    'たどり終えると、通った場所の地名も記録されます。',
     'ゆっくり歩いても完成します。ただしコースは順番どおりに。',
     'スタート地点に着くと、自動で記録が始まります。',
   ];
@@ -705,7 +705,7 @@
     const line = L.polyline(ll, { color: '#e8384f', weight: 5, opacity: .95, lineJoin: 'round' });
     planLayer.addLayer(ideal); planLayer.addLayer(line);
     map.fitBounds(line.getBounds(), fitPad()); startRunner(ll);
-    $('#plan-info').textContent = `再現度 ${Math.round(r.iou * 100)}%（紫の点線が目標の形）・走る距離 約${kmTxt(r.lengthM / 1000)}` + (plan.demo ? '・デモ道路' : '');
+    $('#plan-info').textContent = `再現度 ${Math.round(r.iou * 100)}%（紫の点線が目標の形）・たどる距離 約${kmTxt(r.lengthM / 1000)}` + (plan.demo ? '・デモ道路' : '');
     $('#plan-results').hidden = false;
     $('#panel-plan').classList.add('compact'); $('#btn-opts').hidden = false;   // 設定欄をたたんで地図を広く
   }
@@ -1020,7 +1020,7 @@
   $('#btn-run').onclick = () => { if (run.running) pauseRun(); else { startRun(); if (settings.autoNav && !NV.open && !$('#sim').checked) openNav(); } };   // スタートすると、自分視点のナビ表示になる
   $('#btn-quit').onclick = async () => {
     const force = $('#btn-quit').dataset.force; delete $('#btn-quit').dataset.force;
-    if (!force && run.tracker.progress > 0.05 && !await askConfirm('走るのをやめて、コース画面にもどりますか？', 'ここまでの記録は保存されません。', 'やめてもどる', 'このまま走る')) return;
+    if (!force && run.tracker.progress > 0.05 && !await askConfirm('コースをたどるのをやめて、コース画面にもどりますか？', 'ここまでの記録は保存されません。', 'やめてもどる', 'このまま走る')) return;
     stopTracking(); closeNav(); runLayer.clearLayers(); mode = 'plan';
     $('#panel-run').hidden = true; $('#panel-plan').hidden = false;
     if (startMarker) startMarker.addTo(map); showRoutes();
@@ -1185,7 +1185,7 @@
     items.sort((a, b) => b.r.date.localeCompare(a.r.date));
     $('#modal-card').innerHTML = `<h2>きろく</h2>` + (() => {
         const st = computeStats(), JP_KM = 3000, EARTH = 40075, pct = (v, t) => Math.min(100, v / t * 100);
-        return `<div class="sum-stats"><div><b>${kmTxt(st.km, 1)}</b><small>合計距離</small></div><div><b>${st.count}回</b><small>走った回数</small></div>` +
+        return `<div class="sum-stats"><div><b>${kmTxt(st.km, 1)}</b><small>合計距離</small></div><div><b>${st.count}回</b><small>たどった回数</small></div>` +
           `<div><b>${st.done}</b><small>完成した数</small></div><div><b>${st.streak}日</b><small>連続日数</small></div></div>` +
           `<div class="stat-bar"><span>日本縦断 ${kmTxt(JP_KM, 0)}</span><b>${pct(st.km, JP_KM).toFixed(1)}%</b><div class="bar"><i style="width:${pct(st.km, JP_KM)}%"></i></div></div>` +
           `<div class="stat-bar"><span>地球一周 ${kmTxt(EARTH, 0)}</span><b>${pct(st.km, EARTH).toFixed(2)}%</b><div class="bar"><i style="width:${pct(st.km, EARTH)}%"></i></div></div>` +
@@ -1230,19 +1230,23 @@
     e.target.value = '';
   };
   $('#menu-reset').onclick = async () => {
-    if (!await askConfirm('すべての記録を消しますか？', '走った記録と、前回作ったコースが消えます。元には戻せません。<br>（先に「記録を書き出す」でバックアップできます）', 'すべて消す', 'やめる')) return;
+    if (!await askConfirm('すべての記録を消しますか？', 'たどった記録と、前回作ったコースが消えます。元には戻せません。<br>（先に「記録を書き出す」でバックアップできます）', 'すべて消す', 'やめる')) return;
     save = blankSave(); persist(); cur ? renderBoard() : renderHome(); closeSheet();
   };
 
   /* ---------- 設定画面 ---------- */
   const tg = (key, label, note) => `<div class="set-row"><div class="set-l"><b>${label}</b>${note ? `<small>${note}</small>` : ''}</div><button class="switch" role="switch" data-set="${key}" aria-checked="${!!settings[key]}"><i></i></button></div>`;
   const sg = (key, label, opts, val, note) => `<div class="set-row col"><div class="set-l"><b>${label}</b>${note ? `<small>${note}</small>` : ''}</div><div class="seg" data-seg="${key}">` + opts.map(([v, t]) => `<button data-v="${v}" class="${v === val ? 'on' : ''}">${t}</button>`).join('') + '</div></div>';
+  /* 画面の色: 色の丸をタップして選ぶ(いちばん左の「自動」は、時間帯で変わる) */
+  const SWATCH = [['yellow', '黄'], ['orange', 'オレンジ'], ['red', '赤'], ['pink', 'ピンク'], ['green', '緑'], ['sky', '水色'], ['blue', '青'], ['purple', '紫'], ['white', '白'], ['black', '黒'], ['auto', '自動']];
+  const swatchRow = cur => `<div class="set-row col"><div class="set-l"><b>画面の色</b><small>好きな色を選べます。「自動」は、日の出・日没に合わせて朝・昼・夕方・夜で変わります</small></div><div class="seg swatches" data-seg="theme">` +
+    SWATCH.map(([v, t]) => `<button data-v="${v}" class="sw ${v === cur ? 'on' : ''}" aria-label="${t}"><i style="${v === 'auto' ? 'background:linear-gradient(135deg,#ffc9a0 0 25%,#ffd84a 25% 50%,#ff8f5a 50% 75%,#30244f 75%)' : 'background:' + Theme.colors[v].sea}"></i><span>${t}</span></button>`).join('') + '</div></div>';
   function openSettings() {
     $('#menu').hidden = true;
     const nm = (save.runs ? Object.keys(save.runs).length : 0) + (save.worldRuns ? Object.keys(save.worldRuns).length : 0);
     $('#modal-card').innerHTML = `<div class="set-head"><h2>設定</h2><button id="set-close" class="link">とじる</button></div><div class="set-body">` +
       `<h3>プロフィール</h3><div class="set-row col"><div class="set-l"><b>ニックネーム</b><small>ホームの見出しに表示されます（この端末の中だけに保存）</small></div><input id="set-nick" type="text" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="12" placeholder="例: ランナー" value="${esc(settings.nick)}"></div>` +
-      `<h3>表示</h3>` + sg('theme', '画面の色', [['auto', '自動'], ['morning', '朝'], ['day', '昼'], ['evening', '夕方'], ['night', '夜']], Theme.mode(), '自動は、いる場所の日の出・日没に合わせて変わります') +
+      `<h3>表示</h3>` + swatchRow(Theme.mode()) +
       sg('lang', '言語', [['ja', '日本語'], ['en', 'English']], I18N.lang) +
       sg('kbd', '入力キーボード', [['system', '端末のもの'], ['flick', 'フリック'], ['qwerty', 'QWERTY']], settings.kbd, 'アプリ内のキーボードで検索欄に入力します') +
       sg('units', '距離の単位', [['km', 'キロメートル'], ['mi', 'マイル']], settings.units) +
@@ -1250,10 +1254,10 @@
       `<div class="set-row col"><div class="set-l"><b>BGMの音量</b></div><input id="set-vol" type="range" min="0" max="100" value="${Math.round(Music.volume() * 100)}"></div>` +
       `<div class="set-row"><div class="set-l"><b>効果音</b><small>コース完成・ゴールの音</small></div><button class="switch" data-snd="sfx" role="switch" aria-checked="${Music.sfxIsOn()}"><i></i></button></div>` +
       `<div class="set-row"><div class="set-l"><b>ボタンの音</b><small>押したときの、やわらかい「ぽん」という音</small></div><button class="switch" data-snd="tap" role="switch" aria-checked="${Music.tapIsOn()}"><i></i></button></div>` +
-      `<h3>走るとき</h3>` + tg('autoLocate', '開いたら現在地にピンを立てる', '位置情報の許可が必要です') + tg('autoNav', 'スタートで自分視点のナビ表示にする') +
+      `<h3>たどるとき</h3>` + tg('autoLocate', '開いたら現在地にピンを立てる', '位置情報の許可が必要です') + tg('autoNav', 'スタートで自分視点のナビ表示にする') +
       tg('voice', '音声案内', '曲がり角の手前で読み上げます') + tg('vibrate', 'バイブレーション', 'ゴールとコースから外れたときに振動') + tg('keepAwake', '走っている間、画面を消さない') +
       `<h3>見た目</h3>` + tg('motion', 'アニメーション', '波紋・紙吹雪・切り替えの動き') +
-      `<h3>記録のデータ</h3><div class="set-row"><div class="set-l"><b>走った記録</b><small>${nm}件</small></div></div>` +
+      `<h3>記録のデータ</h3><div class="set-row"><div class="set-l"><b>たどった記録</b><small>${nm}件</small></div></div>` +
       `<div class="set-btns"><button id="set-list"><span>きろく</span></button><button id="set-export"><span>書き出す</span></button><button id="set-import"><span>読み込む</span></button></div>` +
       `<div class="set-btns"><button id="set-reset" class="danger">すべて消す</button></div>` +
       `<h3>このアプリについて</h3><div class="set-about">てくてく地図あつめ　バージョン ${APP_VER}<br>走った道をつないで、地図のピースを集めるアプリです。<br><br>` +
@@ -1299,9 +1303,9 @@
   function showWelcome() {
     const m = $('#modal'), c = $('#modal-card');
     c.innerHTML = `<h2 style="font-size:22px">ようこそ！</h2>
-      <ol class="wl-steps"><li>走りたい県（国）を選んで、スタート地点を決める</li><li>道にそった「絵のコース」が自動でできる</li><li>実際に走ると、道が線でつながってピースが完成！</li></ol>
+      <ol class="wl-steps"><li>たどりたい県（国）を選んで、スタート地点を決める</li><li>道にそった「絵のコース」が自動でできる</li><li>実際に走ると、道が線でつながってピースが完成！</li></ol>
       ${inAppBrowser() ? '<p class="wl-warn">いまアプリ内のブラウザで開いているかもしれません。右上のメニューから「Safari（ブラウザ）で開く」を選ぶと、記録が消えにくくなります。</p>' : ''}
-      <ul class="wl-notes"><li>走るときは交通ルールを守り、立ち入れない場所には入らないでください。</li><li>走った記録はこの端末の中にだけ保存します。コース作成のため、スタート付近の地図データを外部の地図サービスから取得します。</li><li>走っている間は、画面をつけたままにしてください。</li><li>記録はこのブラウザに保存されます。Safariで開いて「ホーム画面に追加」しておくと安心です。</li></ul>
+      <ul class="wl-notes"><li>歩く・走るときは交通ルールを守り、立ち入れない場所には入らないでください。</li><li>走った記録はこの端末の中にだけ保存します。コース作成のため、スタート付近の地図データを外部の地図サービスから取得します。</li><li>歩いて・走っている間は、画面をつけたままにしてください。</li><li>記録はこのブラウザに保存されます。Safariで開いて「ホーム画面に追加」しておくと安心です。</li></ul>
       <button id="wl-ok" class="primary" style="width:100%;margin-top:12px">はじめる</button>`;
     m.hidden = false;
     $('#wl-ok').onclick = () => { m.hidden = true; try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* なし */ } };
