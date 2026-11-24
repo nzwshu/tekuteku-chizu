@@ -184,10 +184,11 @@
   }
   async function fetchRoads(lat, lon, radiusM, opts = {}) {
     const eps = opts.endpoints || OVERPASS;
-    const attempts = opts.single ? [[radiusM, false]] : [[radiusM, false], [radiusM * 0.8, true]];
+    const attempts = opts.single ? [[radiusM, false]] : [[radiusM, false], [radiusM * 0.8, true], [radiusM * 0.8, true, 5000]];   // 3回目は、サーバーの混雑がおさまるのを少し待ってから
     const errs = [];
     for (let i = 0; i < attempts.length; i++) {
-      const [r, light] = attempts[i];
+      const [r, light, wait] = attempts[i];
+      if (wait) { if (opts.onStatus) opts.onStatus('サーバーが混み合っています。少し待ってからもう一度試します…'); await new Promise(res => setTimeout(res, wait)); }
       if (i > 0 && opts.onStatus) opts.onStatus('うまく取れないため、軽いデータで再挑戦中…');
       try { return await raceFetch('data=' + encodeURIComponent(overpassQuery(lat, lon, r, light)), eps, opts); }
       catch (e) { errs.push(e.message); }

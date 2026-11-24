@@ -382,6 +382,15 @@
     };
     let pick = '地図'; try { pick = localStorage.getItem('hashitte-basemap4') || pick; } catch (e) { /* 既定 */ }
     if (!bases[pick]) pick = '地図';
+    /* 地図の画像サーバーが混み合って取れないときは、予備のサーバーに自動で切り替える */
+    (function () {
+      const osm = bases['地図']; let bad = 0, good = 0, swapped = false;
+      osm.on('tileload', () => { good++; }); osm.on('tileerror', () => {
+        if (swapped || ++bad < 6 || good > bad) return; swapped = true;
+        osm.setUrl('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'); osm.options.attribution = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>';
+        if (map && map.attributionControl) map.attributionControl.addAttribution(osm.options.attribution); toast('地図サーバーが混み合っているため、予備の地図に切り替えました');
+      });
+    })();
     bases[pick].addTo(map);
     L.control.layers(bases, null, { position: 'topright', collapsed: true }).addTo(map);
     map.on('baselayerchange', e => { try { localStorage.setItem('hashitte-basemap4', e.name); } catch (err) { /* なし */ } });
@@ -494,6 +503,7 @@
   });
   /* 地図画面を開いたら、まず現在地にピンを立てる(許可されていない・取得できないときは、前回の場所のまま) */
   /* 場所の検索(OpenStreetMap Nominatim)→ 結果をタップでスタート地点に */
+  const NOM = { last: 0, cache: new Map() };
   $('#place-form').addEventListener('submit', async e => {
     e.preventDefault(); const q = $('#place-q').value.trim(), box = $('#place-res'); if (!q) return;
     $('#place-q').blur();                                  // 検索したらキーボードを閉じて、結果が見えるようにする
@@ -502,7 +512,10 @@
       const c = map ? map.getCenter() : null;
       const ask = async qq => {
         const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + I18N.lang + '&q=' + encodeURIComponent(qq) + (c ? `&viewbox=${c.lng - 1},${c.lat + 1},${c.lng + 1},${c.lat - 1}` : '');
-        const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json();
+        if (NOM.cache.has(url)) return NOM.cache.get(url);
+        const gap = NOM.last + 1100 - Date.now(); if (gap > 0) await new Promise(r2 => setTimeout(r2, gap));      // 利用規約: 1秒に1回まで
+        NOM.last = Date.now(); const r = await fetch(url); if (!r.ok) throw new Error(r.status === 429 ? 'しばらく待ってからもう一度検索してください' : 'HTTP ' + r.status);
+        const jj = await r.json(); NOM.cache.set(url, jj); return jj;
       };
       /* 登録名と完全に一致しないと出ないので、見つからなければ「えき・駅」を外した言い方でも探す(例: へいわだいえき → へいわだい) */
       const tries = [q]; const q2 = q.replace(/[\s　]*(えき|エキ|駅)$/, '').trim(); if (q2 && q2 !== q) tries.push(q2, q2 + ' 駅');
@@ -666,7 +679,7 @@
       }
     } catch (e) {
       if (tok !== plan.token) return;
-      FX.shake($('#plan-msg')); $('#plan-msg').textContent = e.message + (src === 'osm' ? '。大きさを「小」にするか、道路の少ない場所で試すか、少し待ってからもう一度お試しください。「デモ」ならネットなしで動きます。' : '');
+      FX.shake($('#plan-msg')); console.warn(e.message); const busyMsg = src === 'osm' && /道路データを取得できませんでした/.test(e.message); $('#plan-msg').textContent = (busyMsg ? '道路データのサーバーが混み合っているようです。1〜2分あけてもう一度試すか、大きさを「小」にしてみてください。「デモ」ならネットなしで動きます。' : e.message) + (src === 'osm' && !busyMsg ? '。大きさを「小」にするか、道路の少ない場所で試すか、少し待ってからもう一度お試しください。「デモ」ならネットなしで動きます。' : '');
     } finally {
       if (tok === plan.token) { plan.busy = false; if (plan.holdLoader) { plan.holdLoader = false; } else { $('#loading').hidden = true; stopLoader(); } Music.scene('calm'); $('#btn-make').disabled = false; $('#btn-make').textContent = 'コースを作る'; }
     }
@@ -1091,6 +1104,49 @@
     const el = document.querySelector(`#board .piece[data-id="${id}"]`);
     if (el) { el.classList.remove('flash'); void el.getBoundingClientRect(); el.classList.add('flash'); }
   }
+  /* ---------- 共有用の画像(Xなどに投稿できる1080×1080) ---------- */
+  const SITE_URL = 'https://af22091.github.io/hashitte-chizu/';
+  function shareCanvas(id, mk) {
+    const p = prefOf(mk, id), r = runsOf(mk)[id], en = window.I18N && I18N.lang === 'en';
+    const W = 1080, cv = document.createElement('canvas'); cv.width = cv.height = W; const c = cv.getContext('2d');
+    const F = '"Zen Maru Gothic","Hiragino Maru Gothic ProN","Noto Sans CJK JP",sans-serif', INK = '#1c1b22', col = COLORS[p.color];
+    c.fillStyle = '#ffd84a'; c.fillRect(0, 0, W, W);
+    const rr = (x, y, w, h, rad) => { c.beginPath(); c.moveTo(x + rad, y); c.arcTo(x + w, y, x + w, y + h, rad); c.arcTo(x + w, y + h, x, y + h, rad); c.arcTo(x, y + h, x, y, rad); c.arcTo(x, y, x + w, y, rad); c.closePath(); };
+    rr(86, 96, 920, 780, 48); c.fillStyle = 'rgba(28,27,34,.55)'; c.fill();
+    rr(70, 80, 920, 780, 48); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 8; c.strokeStyle = INK; c.stroke();
+    c.textAlign = 'center'; c.fillStyle = INK; c.font = `900 66px ${F}`;
+    c.fillText(en ? `${p.name} done!` : `${p.name}を走りました！`, W / 2 - 10, 190);
+    // 走った道(線)
+    const all = r.trail.concat(r.planned || []), lat0 = all.reduce((q, t) => q + t[0], 0) / all.length, lon0 = all.reduce((q, t) => q + t[1], 0) / all.length;
+    const loc = pts => pts.map(t => RE.toLocal(t[0], t[1], lat0, lon0)), A = loc(r.trail), B = r.planned ? loc(r.planned) : [];
+    let x0 = 1e18, y0 = 1e18, x1 = -1e18, y1 = -1e18; for (const t of A.concat(B)) { x0 = Math.min(x0, t[0]); y0 = Math.min(y0, t[1]); x1 = Math.max(x1, t[0]); y1 = Math.max(y1, t[1]); }
+    const box = 470, k = box / Math.max(x1 - x0, y1 - y0, 1), cx = W / 2 - 10, cy = 470, ox = cx - (x1 - x0) * k / 2, oy = cy + (y1 - y0) * k / 2;
+    const pt = t => [ox + (t[0] - x0) * k, oy - (t[1] - y0) * k];
+    c.lineJoin = c.lineCap = 'round';
+    if (B.length) { c.setLineDash([14, 12]); c.strokeStyle = '#b9c3cd'; c.lineWidth = 5; c.beginPath(); B.forEach((t, i) => { const q = pt(t); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); }); c.closePath(); c.stroke(); c.setLineDash([]); }
+    c.strokeStyle = INK; c.lineWidth = 20; c.beginPath(); A.forEach((t, i) => { const q = pt(t); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); }); c.stroke();
+    c.strokeStyle = col; c.lineWidth = 12; c.stroke();
+    c.fillStyle = INK; c.font = `700 44px ${F}`;
+    c.fillText(`${fmtKm(r.distanceM)}　${fmtTime(r.durationS)}`, W / 2 - 10, 800);
+    const total = mk === 'jp' ? 47 : 175, nDone = Object.keys(runsOf(mk)).length;
+    c.font = `900 54px ${F}`; c.fillText((mk === 'jp' ? (en ? 'Japan' : '日本地図') : (en ? 'World' : '世界地図')) + `　${nDone} / ${total}`, W / 2, 940);
+    c.font = `700 40px ${F}`; c.fillText('#はしって地図あつめ', W / 2, 1000); c.font = `700 30px ${F}`; c.fillText(SITE_URL.replace('https://', ''), W / 2, 1044);
+    return cv;
+  }
+  async function shareRun(id, mk) {
+    const p = prefOf(mk, id), en = window.I18N && I18N.lang === 'en';
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) { /* そのまま */ }
+    const cv = shareCanvas(id, mk), blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    if (!blob) return toast('画像を作れませんでした');
+    const file = new File([blob], 'hashitte-chizu.png', { type: 'image/png' });
+    const text = en ? `I ran ${p.name}! #HashitteChizu` : `${p.name}を走って完成させました！ #はしって地図あつめ`;
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, url: SITE_URL }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; /* 共有できない端末: 保存にきりかえ */ }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hashitte-chizu.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('画像を保存しました。Xなどに添付して投稿できます');
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(SITE_URL), '_blank', 'noopener');
+  }
   function showDone(id, fresh, mk = cur) {
     const p = prefOf(mk, id), r = runsOf(mk)[id]; if (!r) return;
     $('#modal-card').innerHTML =
@@ -1099,11 +1155,13 @@
       `<div class="facts">距離 ${fmtKm(r.distanceM)}　時間 ${fmtTime(r.durationS)}　なぞれた割合 ${Math.round((r.coverage || 0) * 100)}%` +
       `<div id="md-place" data-key="${mk}:${id}">${placeHtml(r, mk + id).replace(/^<br>/, '')}</div>` +
       `${r.demo ? '<span class="muted">（デモの記録）</span>' : ''}</div>` +
-      `<div class="sheet-actions" style="margin-top:12px"><button id="md-del">この記録を消す</button><button class="primary" id="md-ok">とじる</button></div>`;
+      `<button id="md-share" class="share-btn" style="width:100%;margin-top:12px">絵をシェアする（画像）</button>` +
+      `<div class="sheet-actions" style="margin-top:10px"><button id="md-del">この記録を消す</button><button class="primary" id="md-ok">とじる</button></div>`;
     $('#modal').hidden = false;
     if (fresh) { FX.confetti([COLORS[p.color]]); buzz([30, 40, 60]); }
     const pb = $('#md-place .mini'); if (pb) pb.onclick = () => fetchPlaceFor(mk, id);
     $('#md-ok').onclick = () => { $('#modal').hidden = true; };
+    $('#md-share').onclick = () => shareRun(id, mk);
     $('#md-del').onclick = async () => {
       if (!await askConfirm('記録を消しますか？', `${p.name} の記録を消します。元に戻せません。`, '消す', 'やめる')) { showDone(id, fresh, mk); return; }
       delete runsOf(mk)[id]; persist(); if (cur === mk) renderBoard(); else if (!cur) renderHome(); $('#modal').hidden = true; closeSheet(); toast('記録を消しました');
@@ -1235,7 +1293,24 @@
 
   /* ---------- 起動 ---------- */
   if (!DEV) { $('.row.sim').hidden = true; $('#src option[value="demo"]').remove(); $('.src-row').hidden = true; }
-  loadAll().then(() => { renderHome(); show('home'); }).catch(e => {
+  /* はじめての案内(使い方・安全・保存場所)。ホームの「使い方」からもう一度見られる */
+  const WELCOME_KEY = 'hashitte-welcome-v1';
+  const inAppBrowser = () => /Line\/|Instagram|FBAN|FBAV|Twitter|MicroMessenger|; wv\)/i.test(navigator.userAgent);
+  function showWelcome() {
+    const m = $('#modal'), c = $('#modal-card');
+    c.innerHTML = `<h2 style="font-size:22px">ようこそ！</h2>
+      <ol class="wl-steps"><li>走りたい県（国）を選んで、スタート地点を決める</li><li>道にそった「絵のコース」が自動でできる</li><li>実際に走ると、道が線でつながってピースが完成！</li></ol>
+      ${inAppBrowser() ? '<p class="wl-warn">いまアプリ内のブラウザで開いているかもしれません。右上のメニューから「Safari（ブラウザ）で開く」を選ぶと、記録が消えにくくなります。</p>' : ''}
+      <ul class="wl-notes"><li>走るときは交通ルールを守り、立ち入れない場所には入らないでください。</li><li>走った記録はこの端末の中にだけ保存します。コース作成のため、スタート付近の地図データを外部の地図サービスから取得します。</li><li>走っている間は、画面をつけたままにしてください。</li><li>記録はこのブラウザに保存されます。Safariで開いて「ホーム画面に追加」しておくと安心です。</li></ul>
+      <button id="wl-ok" class="primary" style="width:100%;margin-top:12px">はじめる</button>`;
+    m.hidden = false;
+    $('#wl-ok').onclick = () => { m.hidden = true; try { localStorage.setItem(WELCOME_KEY, '1'); } catch (e) { /* なし */ } };
+  }
+  const wlBtn = $('#home-help'); if (wlBtn) wlBtn.onclick = showWelcome;
+  const firstWelcome = () => { let seen = false;
+    try { seen = !!localStorage.getItem(WELCOME_KEY); } catch (e) { /* なし */ } if (navigator.webdriver && !/welcome=1/.test(location.search)) seen = true;   // 自動テストの邪魔をしない
+    if (!seen && !cur) setTimeout(() => { if ($('#modal').hidden) showWelcome(); }, 500); };
+  loadAll().then(() => { renderHome(); show('home'); firstWelcome(); }).catch(e => {
     $('#home-cards').innerHTML = '<p class="muted" style="padding:16px">データを読み込めませんでした。フォルダで `python -m http.server` を実行し、http://localhost:8000 で開いてください。 ' + esc(e.message) + '</p>';
   });
   window.__app = { save: () => save, byId: () => byId, plan, run, mode: () => cur, view: () => view };   // 動作確認用
