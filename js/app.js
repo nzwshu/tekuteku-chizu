@@ -1109,7 +1109,7 @@
     if (el) { el.classList.remove('flash'); void el.getBoundingClientRect(); el.classList.add('flash'); }
   }
   /* ---------- 共有用の画像(Xなどに投稿できる1080×1080) ---------- */
-  const SITE_URL = 'https://nzwshu.github.io/hashitte-chizu/';
+  const SITE_URL = 'https://uwhzsn.github.io/tekuteku-chizu/';
   function shareCanvas(id, mk) {
     const p = prefOf(mk, id), r = runsOf(mk)[id], en = window.I18N && I18N.lang === 'en';
     const W = 1080, cv = document.createElement('canvas'); cv.width = cv.height = W; const c = cv.getContext('2d');
@@ -1142,12 +1142,12 @@
     try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) { /* そのまま */ }
     const cv = shareCanvas(id, mk), blob = await new Promise(r => cv.toBlob(r, 'image/png'));
     if (!blob) return toast('画像を作れませんでした');
-    const file = new File([blob], 'hashitte-chizu.png', { type: 'image/png' });
+    const file = new File([blob], 'tekuteku-chizu.png', { type: 'image/png' });
     const text = en ? `I ran ${p.name}! #TekutekuMaps` : `${p.name}を歩いて・走って完成させました！ #てくてく地図あつめ`;
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, url: SITE_URL }); return; }
     } catch (e) { if (e && e.name === 'AbortError') return; /* 共有できない端末: 保存にきりかえ */ }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hashitte-chizu.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tekuteku-chizu.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     toast('画像を保存しました。Xなどに添付して投稿できます');
     window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(SITE_URL), '_blank', 'noopener');
   }
