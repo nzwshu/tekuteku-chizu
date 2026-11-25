@@ -33,6 +33,7 @@
   };
   const LEGACY = { morning: 'yellow', day: 'yellow', evening: 'orange', night: 'black' };   // 以前の「朝・昼・夕方・夜」の選択は、近い色に引きつぐ
   let mode = 'sky'; try { mode = localStorage.getItem('hashitte-theme-mode') || 'sky'; } catch (e) { /* 水色 */ }
+  try { if (!localStorage.getItem('hashitte-theme-sky1')) { localStorage.setItem('hashitte-theme-sky1', '1'); if (mode === 'yellow' || LEGACY[mode] === 'yellow') { mode = 'sky'; localStorage.setItem('hashitte-theme-mode', 'sky'); } } } catch (e) { /* なし */ }   // 基本の色を水色にした: 以前の黄色のままの端末は、一度だけ水色にそろえる
   if (LEGACY[mode]) mode = LEGACY[mode]; if (mode !== 'auto' && !COLORS[mode]) mode = 'sky';
   function phase(now) {
     const q = new URLSearchParams(location.search).get('tod');

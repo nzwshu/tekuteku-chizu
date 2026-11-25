@@ -6,7 +6,7 @@
   const SIZES = { s: 1000, m: 1500, l: 2000 };            // 形の最長辺(m)
   const STORE_KEY = 'hashitte-nihon-v1';
   /* ---------- ユーザー設定(この端末の中だけに保存) ---------- */
-  const SET_KEY = 'hashitte-settings-v1', APP_VER = '2026.11.18';
+  const SET_KEY = 'hashitte-settings-v1', APP_VER = '2026.11.25';
   const SET_DEF = { nick: '', units: 'km', autoLocate: true, autoNav: true, keepAwake: true, vibrate: true, voice: false, motion: true, kbd: 'system' };
   let settings = Object.assign({}, SET_DEF);
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SET_KEY) || '{}')); } catch (e) { /* 既定 */ }
