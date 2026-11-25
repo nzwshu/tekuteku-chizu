@@ -538,22 +538,36 @@
     } catch (er) { box.innerHTML = '<div class="muted">検索できませんでした。通信を確認してもう一度お試しください。</div>'; }
     finally { $('#place-go').disabled = false; }
   });
+  /* ---------- 現在地の取得(スマホでも取りやすいように、高精度でだめなら、ふつうの精度でやり直す) ---------- */
+  const geoText = c => c === 1 ? '位置情報が許可されていません' : c === 2 ? '現在地を取得できませんでした。電波が弱いか、位置情報がオフになっています' : c === 3 ? '現在地の取得に時間がかかっています。空の見える場所で、もう一度お試しください' : '現在地を取得できませんでした';
+  let geoGuideShown = false;
+  async function geoGuide() {
+    geoGuideShown = true;
+    await askConfirm('位置情報を許可してください', 'このアプリは、現在地を使って、スタート地点と、たどる位置を決めます。<br>【iPhone】<br>①「設定」→「プライバシーとセキュリティ」→「位置情報サービス」をオンにする<br>②同じ画面の「Safariのウェブサイト」を「使用中のみ」にする<br>③Safariでこのページを開き、アドレスの左の「ぁあ」→「Webサイトの設定」→「位置情報」を「許可」にする<br>【Android】<br>Chromeのアドレスの左のマーク →「権限」→「位置情報」を許可する<br>※XやLINEなどのアプリ内ブラウザや、ホーム画面に追加した版では、許可できないことがあります。そのときは、Safari(Chrome)で開いてください。', 'わかった', 'とじる');
+  }
+  function geoOnce(ok, fail, hiMs) {
+    const g = navigator.geolocation;
+    g.getCurrentPosition(ok, e => {
+      if (e.code === 1) return fail(e);                                  // 許可なし: やり直しても同じ
+      g.getCurrentPosition(ok, fail, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+    }, { enableHighAccuracy: true, timeout: hiMs || 10000, maximumAge: 60000 });
+  }
   function locateStart() {
     if (!navigator.geolocation || !settings.autoLocate) return;
     const cur0 = plan.pref && plan.pref.id;
-    navigator.geolocation.getCurrentPosition(p => {
+    geoOnce(p => {
       const ll = [p.coords.latitude, p.coords.longitude];
       if (window.Theme) Theme.setLocation(ll[0], ll[1]);
       if (mode !== 'plan' || !plan.pref || plan.pref.id !== cur0 || plan.touched || plan.routes.length || plan.busy) return;   // もう自分で選んだ後は動かさない
       setStart(ll, true);
-    }, () => { /* 許可なし・失敗: そのまま */ }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+    }, e => { if (e && e.code === 1 && !geoGuideShown) { geoGuideShown = true; toast('位置情報が許可されていません。「現在地」ボタンから、設定の手順が見られます'); } });
   }
   $('#btn-here').onclick = async () => {
     if (!await guardCourse()) return;
     if (!navigator.geolocation) return toast('この端末では現在地を取得できません');
-    navigator.geolocation.getCurrentPosition(
+    geoOnce(
       p => { plan.touched = true; if (window.Theme) Theme.setLocation(p.coords.latitude, p.coords.longitude); setStart([p.coords.latitude, p.coords.longitude], true); },
-      err => toast('現在地を取得できませんでした: ' + err.message), { enableHighAccuracy: true, timeout: 12000 });
+      e => { if (e.code === 1) geoGuide(); else toast(geoText(e.code)); }, 12000);
   };
   $('#plan-back').onclick = async () => {
     if (plan.routes.length && !await askConfirm(`${boardName()}の画面にもどりますか？`, 'いま表示しているコースは消えます。<br>（あとで「前回作ったコース」から呼び戻せます）', `${boardName()}にもどる`, 'コースの画面にとどまる')) return;
@@ -1011,7 +1025,7 @@
       if (!navigator.geolocation) { $('#run-msg').textContent = 'この端末では位置情報を使えません。'; pauseRun(); return; }
       run.watchId = navigator.geolocation.watchPosition(
         p => onFix(p.coords.latitude, p.coords.longitude, p.coords.accuracy, p.timestamp, false),
-        err => { $('#run-msg').textContent = err.code === 1 ? '位置情報が許可されていません。ブラウザの設定で許可してください。' : '位置情報エラー: ' + err.message; },
+        err => { $('#run-msg').textContent = geoText(err.code); if (err.code === 1 && !geoGuideShown) geoGuide(); },
         { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 });
       try { if (settings.keepAwake && navigator.wakeLock) run.wake = await navigator.wakeLock.request('screen'); } catch (e) { /* 画面を点けたままにできなくても続行 */ }
     }
