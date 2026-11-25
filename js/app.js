@@ -1117,7 +1117,7 @@
     const p = prefOf(mk, id), r = runsOf(mk)[id], en = window.I18N && I18N.lang === 'en';
     const W = 1080, cv = document.createElement('canvas'); cv.width = cv.height = W; const c = cv.getContext('2d');
     const F = '"Zen Maru Gothic","Hiragino Maru Gothic ProN","Noto Sans CJK JP",sans-serif', INK = '#1c1b22', col = COLORS[p.color];
-    c.fillStyle = '#ffd84a'; c.fillRect(0, 0, W, W);
+    c.fillStyle = (getComputedStyle(document.documentElement).getPropertyValue('--sea') || '').trim() || '#7fd3f0'; c.fillRect(0, 0, W, W);   // いま選んでいる背景の色
     const rr = (x, y, w, h, rad) => { c.beginPath(); c.moveTo(x + rad, y); c.arcTo(x + w, y, x + w, y + h, rad); c.arcTo(x + w, y + h, x, y + h, rad); c.arcTo(x, y + h, x, y, rad); c.arcTo(x, y, x + w, y, rad); c.closePath(); };
     rr(86, 96, 920, 780, 48); c.fillStyle = 'rgba(28,27,34,.55)'; c.fill();
     rr(70, 80, 920, 780, 48); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 8; c.strokeStyle = INK; c.stroke();

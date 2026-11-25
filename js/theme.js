@@ -32,8 +32,8 @@
     black: { sea: '#26242c', glow: '#3d3a47', dark: true },
   };
   const LEGACY = { morning: 'yellow', day: 'yellow', evening: 'orange', night: 'black' };   // 以前の「朝・昼・夕方・夜」の選択は、近い色に引きつぐ
-  let mode = 'yellow'; try { mode = localStorage.getItem('hashitte-theme-mode') || 'yellow'; } catch (e) { /* 黄 */ }
-  if (LEGACY[mode]) mode = LEGACY[mode]; if (mode !== 'auto' && !COLORS[mode]) mode = 'yellow';
+  let mode = 'sky'; try { mode = localStorage.getItem('hashitte-theme-mode') || 'sky'; } catch (e) { /* 水色 */ }
+  if (LEGACY[mode]) mode = LEGACY[mode]; if (mode !== 'auto' && !COLORS[mode]) mode = 'sky';
   function phase(now) {
     const q = new URLSearchParams(location.search).get('tod');
     if (['morning', 'day', 'evening', 'night'].includes(q)) return q;
