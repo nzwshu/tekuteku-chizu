@@ -19,10 +19,12 @@
     q = (q || '').trim(); if (!q || !cur || !DATAS[cur]) return [];
     const k = Kbd.kata(q), lq = q.toLowerCase(), out = [];
     for (const p of DATAS[cur].prefs) {
-      const yomi = Kbd.kata(cur === 'jp' ? (PREF_YOMI[p.short] || '') : (WORLD_YOMI[p.name] || p.name));
-      if (p.name.includes(q) || (p.en && p.en.toLowerCase().includes(lq)) || (yomi && yomi.startsWith(k)) || (cur === 'world' && Kbd.kata(p.name).startsWith(k))) out.push({ label: I18N.lang === 'en' && p.en ? p.en : p.name, value: p.name });
+      const yomi = Kbd.kata(cur === 'jp' ? (PREF_YOMI[p.short] || '') : (WORLD_YOMI[p.name] || p.name)), en = (p.en || '').toLowerCase();
+      let sc = 0;                                                  // 小さいほど上に出す: 先頭が一致 < 単語の先頭が一致 < 途中が一致
+      if (en && en.startsWith(lq)) sc = 1; else if (en && en.split(/[\s\-,()']+/).some(w => w.startsWith(lq))) sc = 2; else if (p.name.startsWith(q) || (yomi && yomi.startsWith(k)) || (cur === 'world' && Kbd.kata(p.name).startsWith(k))) sc = 1; else if (p.name.includes(q) || (en && en.includes(lq))) sc = 3;
+      if (sc) out.push({ sc, label: I18N.lang === 'en' && p.en ? p.en : p.name, value: p.name });
     }
-    return out;
+    return out.sort((a, b) => a.sc - b.sc);
   };
   Kbd.setCandidates(candFn);
   /* 端末のキーボードのときの候補: 入力した文字に合うものだけを出す(未入力では、何も出さない)。アプリ用キーボードは、専用の候補バーを使う */
@@ -313,7 +315,8 @@
     const q = $('#search').value.trim().toLowerCase(); if (!q) return;
     const hit = prefs.find(p => p.name.toLowerCase() === q || (p.en || '').toLowerCase() === q)
       || prefs.find(p => p.name.toLowerCase().includes(q) || (p.en || '').toLowerCase().includes(q));
-    if (hit) { focusPref(hit); $('#search').blur(); } else toast('見つかりませんでした');
+    const cd = hit ? null : candFn(q.replace(/n$/, 'ん'))[0], h2 = hit || (cd && prefs.find(p => p.name === cd.value));   // 名前そのものでなくても、読み(かな)や英語名で見つける
+    if (h2) { focusPref(h2); $('#search').blur(); } else toast('見つかりませんでした');
   }
   /* キーボード対応: 入力欄に合わせた専用キーボード(検索キー・自動大文字/変換なし)を出し、キーボードで下の画面が隠れないようにする */
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'set-nick') e.target.blur(); });

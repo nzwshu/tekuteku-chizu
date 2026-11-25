@@ -8,7 +8,47 @@
   const CYCLES = ['あぁ', 'いぃ', 'うぅ', 'えぇ', 'おぉ', 'かが', 'きぎ', 'くぐ', 'けげ', 'こご', 'さざ', 'しじ', 'すず', 'せぜ', 'そぞ', 'ただ', 'ちぢ', 'てで', 'とど', 'はばぱ', 'ひびぴ', 'ふぶぷ', 'へべぺ', 'ほぼぽ', 'つっづ', 'やゃ', 'ゆゅ', 'よょ', 'わゎ'].map(s => [...s]);
   const QROWS = ['1234567890', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
   const T = x => (root.I18N ? root.I18N.tr(x) : x);
-  let mode = 'system', layout = 'flick', el = null, input = null, cand = () => [], hideTimer = 0;
+  let mode = 'system', layout = 'flick', kanaMode = !(root.I18N && root.I18N.lang === 'en'), el = null, input = null, cand = () => [], hideTimer = 0;
+
+
+  /* ---- ローマ字 → かな(QWERTYで、日本語の検索に使う) ---- */
+  const RT = (() => {
+    const t = {}, V = 'aiueo';
+    const rows = { '': 'あいうえお', k: 'かきくけこ', s: 'さしすせそ', t: 'たちつてと', n: 'なにぬねの', h: 'はひふへほ', m: 'まみむめも', r: 'らりるれろ', g: 'がぎぐげご', z: 'ざじずぜぞ', d: 'だぢづでど', b: 'ばびぶべぼ', p: 'ぱぴぷぺぽ' };
+    for (const c in rows) [...V].forEach((v, i) => { t[c + v] = rows[c][i]; });
+    Object.assign(t, { ya: 'や', yu: 'ゆ', yo: 'よ', wa: 'わ', wo: 'を', wi: 'うぃ', we: 'うぇ', si: 'し', ti: 'ち', tu: 'つ', hu: 'ふ', zi: 'じ', shi: 'し', chi: 'ち', tsu: 'つ', fu: 'ふ', ji: 'じ', xtu: 'っ', ltu: 'っ', xtsu: 'っ',
+      sha: 'しゃ', shu: 'しゅ', sho: 'しょ', she: 'しぇ', cha: 'ちゃ', chu: 'ちゅ', cho: 'ちょ', che: 'ちぇ', ja: 'じゃ', ju: 'じゅ', jo: 'じょ', je: 'じぇ', fa: 'ふぁ', fi: 'ふぃ', fe: 'ふぇ', fo: 'ふぉ', thi: 'てぃ', dhi: 'でぃ', xa: 'ぁ', xi: 'ぃ', xu: 'ぅ', xe: 'ぇ', xo: 'ぉ', xya: 'ゃ', xyu: 'ゅ', xyo: 'ょ', la: 'ぁ', li: 'ぃ', lu: 'ぅ', le: 'ぇ', lo: 'ぉ' });
+    const ys = { k: 'き', g: 'ぎ', s: 'し', z: 'じ', j: 'じ', t: 'ち', c: 'ち', d: 'ぢ', n: 'に', h: 'ひ', b: 'び', p: 'ぴ', m: 'み', r: 'り' };
+    for (const c in ys) { t[c + 'ya'] = ys[c] + 'ゃ'; t[c + 'yu'] = ys[c] + 'ゅ'; t[c + 'yo'] = ys[c] + 'ょ'; t[c + 'ye'] = ys[c] + 'ぇ'; }
+    const pre = new Set(); for (const k in t) for (let i = 1; i < k.length; i++) pre.add(k.slice(0, i));
+    return { t, pre };
+  })();
+  function toKana(s) {                                              // 戻り値: かなにした部分 + まだ決まらない末尾
+    let out = '', i = 0;
+    while (i < s.length) {
+      const c = s[i], n = s[i + 1];
+      if (c === '-') { out += 'ー'; i++; continue; }
+      if (c === 'n') {
+        if (n === 'n') { out += 'ん'; i += 2; continue; }
+        if (n === undefined) return { out, rest: 'n' };
+        if (!'aiueoy'.includes(n)) { out += 'ん'; i++; continue; }
+      }
+      if (n !== undefined && c === n && /[bcdfghjklmpqrstvwxyz]/.test(c)) { out += 'っ'; i++; continue; }
+      let hit = '';
+      for (let L = Math.min(4, s.length - i); L >= 1; L--) { const k = s.substr(i, L); if (RT.t[k]) { hit = k; break; } }
+      if (hit) { out += RT.t[hit]; i += hit.length; continue; }
+      if (RT.pre.has(s.slice(i)) || (s.length - i === 1 && /[a-z]/.test(c))) return { out, rest: s.slice(i) };
+      out += c; i++;
+    }
+    return { out, rest: '' };
+  }
+  const kanaOn = () => kanaMode && !!input && input.id === 'search';
+  function kanaFix() {                                              // 入力の直前にならんだローマ字を、かなに置きかえる
+    if (!input) return; const a = input.selectionStart ?? input.value.length, m = /[a-z-]+$/.exec(input.value.slice(0, a)); if (!m) return;
+    const r = toKana(m[0]), txt = r.out + r.rest; if (txt !== m[0]) input.setRangeText(txt, a - m[0].length, a, 'end');
+    input.dispatchEvent(new Event('input', { bubbles: true }));   // 変換後の文字で、候補を出しなおす
+  }
+  function flushN() { if (!input) return; const a = input.selectionStart ?? input.value.length; if (a > 0 && input.value[a - 1] === 'n' && kanaOn()) { input.setRangeText('ん', a - 1, a, 'end'); } }
 
   const DEL = '⌫';
   const kata = s => s.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
@@ -27,7 +67,7 @@
     input.setRangeText(cy[(cy.indexOf(ch) + 1) % cy.length], a - 1, a, 'end'); input.dispatchEvent(new Event('input', { bubbles: true }));
   }
   function enter() {
-    if (!input) return; const f = input.form;
+    if (!input) return; flushN(); const f = input.form;
     if (f) { f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event('submit', { cancelable: true })); }
     else input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     hide();
@@ -73,13 +113,13 @@
     } else {
       QROWS.forEach((r, ri) => {
         const row = document.createElement('div'); row.className = 'qrow r' + ri;
-        if (ri === 3) row.appendChild(mk('q', '-', () => insert('-')));
-        [...r].forEach(c => row.appendChild(mk('q', c, () => insert(c))));
+        if (ri === 3) row.appendChild(mk('q', '-', () => { insert('-'); if (kanaOn()) kanaFix(); }));
+        [...r].forEach(c => row.appendChild(mk('q', c, () => { insert(c); if (kanaOn() && /[a-z]/.test(c)) kanaFix(); })));
         if (ri === 3) row.appendChild(mk('fn big del', DEL, back));
         body.appendChild(row);
       });
       const last = document.createElement('div'); last.className = 'qrow last';
-      last.append(mk('fn big', 'あ', () => { layout = 'flick'; build(); show(); }), mk('q sp', '', () => insert(' ')), mk('fn go', T(input && input.id === 'set-nick' ? '完了' : '検索'), enter));
+      last.append(mk('fn big', 'あ', () => { layout = 'flick'; build(); show(); }), mk('fn kmode', input && input.id === 'search' ? (kanaMode ? 'かな' : 'ABC') : 'ABC', () => { if (!input || input.id !== 'search') return; flushN(); kanaMode = !kanaMode; build(); show(); }), mk('q sp', '', () => insert(' ')), mk('fn go', T(input && input.id === 'set-nick' ? '完了' : '検索'), enter));
       body.appendChild(last);
     }
     function showPop(b, set, d) {
@@ -91,7 +131,7 @@
   function renderCand() {
     if (!el) return; const bar = el.querySelector('.kbd-cand'); bar.textContent = '';
     if (!input || input.id !== 'search') { bar.hidden = true; setH(); return; }
-    const list = cand(input.value) || []; bar.hidden = false; bar.classList.toggle('empty', !list.length);
+    const list = cand(kanaOn() ? input.value.replace(/n$/, 'ん') : input.value) || []; bar.hidden = false; bar.classList.toggle('empty', !list.length);
     list.slice(0, 8).forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'kc'; b.textContent = c.label; tapOn(b, () => { input.value = c.value; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); hide(); }); bar.appendChild(b); });
     setH();
   }
@@ -107,9 +147,11 @@
   document.addEventListener('pointerdown', e => { if (!el || el.hidden) return; if (e.target.closest && (e.target.closest('#kbd') || e.target.closest(TARGETS))) return; hide(); }, true);
   document.addEventListener('input', e => { if (input && e.target === input) renderCand(); });
 
+  const defLayout = () => (mode === 'qwerty' || (root.I18N && root.I18N.lang === 'en')) ? 'qwerty' : 'flick';   // 英語表示のときは、アルファベットのキーボードを先に出す
+  window.addEventListener('i18nchange', () => { kanaMode = !(root.I18N && root.I18N.lang === 'en'); if (mode !== 'system') { layout = defLayout(); if (el) { const was = !el.hidden; build(); el.hidden = !was; setH(); } } });
   function apply() {
     document.querySelectorAll(TARGETS).forEach(i => { i.inputMode = mode === 'system' ? 'search' : 'none'; });
-    if (mode === 'system') hide(); else { layout = mode === 'qwerty' ? 'qwerty' : 'flick'; if (el) { build(); el.hidden = true; } }
+    if (mode === 'system') hide(); else { layout = defLayout(); if (el) { build(); el.hidden = true; } }
   }
   root.Kbd = { setMode(m) { mode = m === 'flick' || m === 'qwerty' ? m : 'system'; apply(); }, setCandidates(fn) { cand = fn; }, refresh() { if (el) { const was = !el.hidden; build(); el.hidden = !was; setH(); } }, kata };
   window.addEventListener('i18nchange', () => root.Kbd.refresh());

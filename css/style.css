@@ -544,3 +544,4 @@ html.kbd-on #modal { padding-bottom: calc(var(--kbd, 0px) + 12px); } html.kbd-on
 .seg.swatches { border: 0; box-shadow: none; outline: 0; }
 .seg.swatches .sw, .seg.swatches .sw.on { color: var(--ink); }
 .seg.swatches .sw span { color: var(--ink); }
+.qrow.last .kk.kmode { width: calc(var(--u) * 1.8); font-size: 13px; }
