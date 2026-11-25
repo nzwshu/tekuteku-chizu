@@ -32,7 +32,7 @@
     'やめる': 'Quit', 'コースを作っています': 'Creating your course', 'コースを作る': 'Create course', 'コースを見る': 'View course', 'シミュレーション走行（開発用）': 'Simulated run (dev)',
     'スタート': 'Start', 'デモ（疑似道路・ネット不要）': 'Demo (fake roads, no internet)', 'ナビ表示をとじる': 'Close navigation', '中': 'M', '大': 'L', '小': 'S',
     '大きさ': 'Size', '実際の道路（OpenStreetMap）': 'Real roads (OpenStreetMap)', '時間': 'Time', '検索': 'Search', '完了': 'Done', '全消し': 'Clear', '準備中…': 'Getting ready…', '記録を書き出す': 'Export records',
-    '記録を読み込む': 'Import records', '距離': 'Distance', '進み具合': 'Progress', '道路データ': 'Road data', '🎯 ぴたっと': '🎯 Stop it', '🏃 ジャンプ': '🏃 Jump', '🐹 もぐら': '🐹 Whack',
+    '記録を読み込む': 'Import records', '距離': 'Distance', '進み具合': 'Progress', '道路データ': 'Road data', '🃏 神経衰弱': '🃏 Memory', '🏃 ジャンプ': '🏃 Jump', '🐹 もぐら': '🐹 Whack',
     '📍 現在地をスタートにする': '📍 Start from my location', '🛰 3D・航空写真で見る': '🛰 View in 3D / satellite', '🧭 ナビ表示': '🧭 Navigation',
     '場所を検索（駅・住所・公園など）': 'Search a place or station', '地図をタップして、好きな場所を指定することもできます': 'You can also tap the map to choose a start point.',
     // ---- 確認・メッセージ ----
@@ -56,7 +56,7 @@
     '大きさを「小」にすると、短い距離でたどれます。': 'Choosing size “S” makes a shorter run.', '道が少ない場所だと、形が崩れやすくなります。': 'Shapes get distorted where there are few roads.', 'たどり終えると、通った場所の地名も記録されます。': 'When you finish, the place name is saved too.',
     'ゆっくり歩いても完成します。ただしコースは順番どおりに。': 'Walking slowly works too. Follow the course in order.', 'スタート地点に着くと、自動で記録が始まります。': 'Recording starts automatically when you reach the start point.',
     '遊び方：画面をタップでジャンプ。障害物をよけて、できるだけ遠くまで走ろう。': 'How to play: tap to jump. Dodge the obstacles and run as far as you can.',
-    '遊び方：左右に動くランナーを、タップで止めます。緑の旗の枠の中で止まれば得点（真ん中ほど高得点）。3回はずすとおしまい。': 'How to play: tap to stop the runner. Stop inside the green flag zone to score (more in the middle). Three misses and it’s over.',
+    '遊び方：カードを2枚ずつめくって、おなじ絵をそろえます。1回でもまちがえると、ぜんぶ裏返って最初からやり直し。並びも絵も、毎回おなじなので、おぼえて挑戦しよう。': 'How to play: flip two cards at a time and match the pairs. One mistake flips everything back and you start over. The layout and pictures are always the same, so memorize them and try again.',
     '遊び方：出てきたもぐらをタップ！ 早くたたくほど高得点。': 'How to play: tap the moles as they pop up! The faster, the more points.',
     'コース作成をやめますか？': 'Stop creating the course?', 'ここまでの作成は中止されます。': 'Progress so far will be cancelled.', '続ける': 'Continue', '作成中…': 'Creating…',
     'デモの道路網を作成中…': 'Building demo road network…', '道路データを取得中…（数秒〜数十秒かかることがあります）': 'Fetching road data… (may take several seconds)', '前回取得した道路データを使います': 'Using road data fetched last time', '道路網を作成中…': 'Building road network…',
@@ -84,7 +84,7 @@
     '地図データ © OpenStreetMap contributors ／ 航空写真 © Esri, Maxar, Earthstar Geographics ／ 地名 Nominatim ／ 3D地図 OpenFreeMap・MapLibre': 'Map data © OpenStreetMap contributors / Imagery © Esri, Maxar, Earthstar Geographics / Place names: Nominatim / 3D map: OpenFreeMap, MapLibre',
     '時間前': 'h ago', '分前': 'min ago',
     // ---- ミニゲーム(キャンバス) ----
-    'タップでもう一度': 'Tap to play again', 'ぴったり！ +2': 'Perfect! +2', 'ナイス！ +1': 'Nice! +1', 'ざんねん…': 'Miss…', '画面をタップして、旗の枠の中で止めよう': 'Tap to stop inside the flag zone',
+    'タップでもう一度': 'Tap to play again', 'ちがった…  最初からやり直し': 'Wrong… start over', 'そろった！': 'Matched!', '1回でもまちがえると、ぜんぶ裏返ります': 'One mistake flips all cards back', 'ぴったり！ +2': 'Perfect! +2', 'ナイス！ +1': 'Nice! +1', 'ざんねん…': 'Miss…', '画面をタップして、旗の枠の中で止めよう': 'Tap to stop inside the flag zone',
     // ---- 道路データ(route.js) ----
     'うまく取れないため、軽いデータで再挑戦中…': 'Retrying with lighter data…', '（混雑中）': '(busy)', '接続できません': 'cannot connect', '完了': 'Done',
     'この周辺の道路が少なすぎます。別の場所を選んでください。': 'There are too few roads here. Please choose another place.', 'ルートを作れませんでした。別の場所か大きさを試してください。': 'Could not make a route. Try another place or size.',
@@ -133,6 +133,8 @@
     [/^(\d+)\/(\d+) 案を計算中…$/, (m, a, b) => `Calculating option ${a}/${b}…`],
     [/^(\d+)m  ベスト (\d+)m$/, (m, a, b) => `${a} m   Best ${b} m`],
     [/^(\d+)m 走りました$/, (m, a) => `Ran ${a} m`],
+    [/^(\d+)回目  (\d+)\/6組  ベスト (\d+回|-)$/, (m, a, d, b) => `Try ${a}   ${d}/6 pairs   Best ${b.replace('回', '')}`],
+    [/^(\d+)回目で ぜんぶそろった！$/, (m, a) => `Cleared on try ${a}!`],
     [/^(\d+)てん  ベスト (\d+)てん$/, (m, a, b) => `${a} pts   Best ${b} pts`],
     [/^(\d+)てん でした$/, (m, a) => `${a} points`],
     [/^(\d+)ひき   のこり ([\d.]+)秒   ベスト (\d+)$/, (m, a, t, b) => `${a} whacked   ${t}s left   Best ${b}`],

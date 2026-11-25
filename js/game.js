@@ -1,4 +1,4 @@
-/* 待ち時間のミニゲーム(3種類): jump=ランナージャンプ / stop=ぴたっとストップ / mole=もぐらたたき */
+/* 待ち時間のミニゲーム(3種類): jump=ランナージャンプ / memo=しんけいすいじゃく / mole=もぐらたたき */
 (function (root) {
   'use strict';
   const T = x => (root.I18N ? root.I18N.tr(x) : x);
@@ -43,38 +43,50 @@
     raf = requestAnimationFrame(loop);
   }
 
-  /* ---------- 2. ぴたっとストップ(タップだけ。往復するランナーをゴール枠で止める) ---------- */
-  function stopGame() {
-    const W = 320, H = 190, X0 = 24, X1 = W - 24;
+  /* ---------- 2. しんけいすいじゃく(配置も絵柄も固定。1回でもまちがえたら、ぜんぶふせて振出しに戻る) ---------- */
+  const MEMO_LAYOUT = ['🏃', '🗻', '📍', '👟', '🗾', '🍙', '🗻', '🏃', '👟', '📍', '🍙', '🗾'];   // 4列×3行。毎回おなじ並び
+  const memoBest = () => { try { return +localStorage.getItem(BEST('memo')) || 0; } catch (e) { return 0; } };   // 少ない回数ほど良い
+  function memoGame() {
+    const W = 320, H = 300, COLS = 4, CW = 68, CH = 76, GAP = 8, X0 = (W - (COLS * CW + (COLS - 1) * GAP)) / 2, Y0 = 38, HOLD = 1000;
     setup(W, H);
-    const newZone = () => { const w = Math.max(24, 76 - g.score * 3); g.zone = { w, c: X0 + w / 2 + Math.random() * (X1 - X0 - w) }; };
-    const reset = () => { g = { x: X0, dir: 1, score: 0, life: 3, over: false, flash: 0, msg: '', zone: null }; newZone(); }; reset();
+    const reset = full => { g = { open: [], done: [], tries: full ? 1 : g.tries + 1, over: false, until: 0, ok: 0, most: full ? 0 : g.most }; }; g = { tries: 0, most: 0 }; reset(true);
+    const at = (x, y) => { for (let i = 0; i < 12; i++) { const cx = X0 + (i % COLS) * (CW + GAP), cy = Y0 + Math.floor(i / COLS) * (CH + GAP); if (x >= cx && x <= cx + CW && y >= cy && y <= cy + CH) return i; } return -1; };
     on(cv, 'pointerdown', e => {
-      e.preventDefault();
-      if (g.over) { reset(); return; }
-      const d = Math.abs(g.x - g.zone.c);
-      if (d <= g.zone.w / 2) { const perfect = d <= g.zone.w * 0.15; g.score += perfect ? 2 : 1; g.msg = perfect ? 'ぴったり！ +2' : 'ナイス！ +1'; newZone(); }
-      else { g.life--; g.msg = 'ざんねん…'; if (g.life <= 0) { g.over = true; saveBest('stop', g.score); } }
-      g.flash = performance.now() + 600;
+      e.preventDefault(); const now = performance.now();
+      if (g.over) { reset(true); return; }
+      if (g.until > now) return;                                       // まちがいを見せている間は、さわれない
+      const r = cv.getBoundingClientRect(), i = at((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H);
+      if (i < 0 || g.done.includes(i) || g.open.includes(i)) return;
+      g.open.push(i);
+      if (g.open.length < 2) return;
+      const [p, q] = g.open;
+      if (MEMO_LAYOUT[p] === MEMO_LAYOUT[q]) { g.done.push(p, q); g.open = []; g.ok = now + 500; g.most = Math.max(g.most, g.done.length / 2);
+        if (g.done.length === 12) { g.over = true; const b = memoBest(); if (!b || g.tries < b) { try { localStorage.setItem(BEST('memo'), g.tries); } catch (x) { /* なし */ } } } }
+      else g.until = now + HOLD;                                       // 1回でもまちがえたら、時間をおいて振出しに戻る
     });
-    let prev = performance.now();
     const loop = now => {
       raf = requestAnimationFrame(loop);
-      const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
-      if (!g.over) { g.x += g.dir * (120 + g.score * 9) * dt; if (g.x > X1) { g.x = X1; g.dir = -1; } if (g.x < X0) { g.x = X0; g.dir = 1; } }
-      c.fillStyle = '#e9f1f6'; c.fillRect(0, 0, W, H);
-      c.fillStyle = '#1c1b22'; c.font = '700 13px sans-serif'; c.textAlign = 'left'; c.fillText(T(`${g.score}てん  ベスト ${best('stop')}てん`), 8, 18);
-      c.textAlign = 'right'; c.fillText('❤'.repeat(Math.max(0, g.life)), W - 8, 18); c.textAlign = 'left';
-      const TY = 120;
-      c.fillStyle = '#c9d6df'; c.fillRect(X0 - 10, TY, X1 - X0 + 20, 6);
-      c.fillStyle = 'rgba(47,163,107,.35)'; c.fillRect(g.zone.c - g.zone.w / 2, TY - 34, g.zone.w, 40);
-      c.fillStyle = '#2fa36b'; c.fillRect(g.zone.c - g.zone.w / 2, TY - 34, g.zone.w, 3);
-      c.font = '22px sans-serif'; c.textAlign = 'center'; c.fillText('🚩', g.zone.c, TY - 40);
-      c.font = '30px sans-serif'; c.save(); c.translate(g.x, TY - 4); c.scale(g.dir, 1); c.fillText('🏃', 0, 0); c.restore();
-      if (g.flash > now) { c.font = '700 16px sans-serif'; c.fillStyle = g.msg === 'ざんねん…' ? '#c9302c' : '#1fa971'; c.fillText(T(g.msg), W / 2, 62); }
-      else { c.font = '12px sans-serif'; c.fillStyle = '#6b7f8f'; c.fillText(T('画面をタップして、旗の枠の中で止めよう'), W / 2, 165); }
+      if (g.until && g.until <= now && !g.over) reset(false);
+      c.fillStyle = '#fff3d6'; c.fillRect(0, 0, W, H);
+      c.fillStyle = '#1c1b22'; c.font = '700 13px sans-serif'; c.textAlign = 'left';
+      const bst = memoBest(); c.fillText(T(`${g.tries}回目  ${g.done.length / 2}/6組  ベスト ${bst ? bst + '回' : '-'}`), 8, 20);
+      const bad = g.until > now;
+      for (let i = 0; i < 12; i++) {
+        const cx = X0 + (i % COLS) * (CW + GAP), cy = Y0 + Math.floor(i / COLS) * (CH + GAP), up = g.done.includes(i) || g.open.includes(i), done = g.done.includes(i);
+        c.beginPath(); c.roundRect ? c.roundRect(cx, cy, CW, CH, 12) : c.rect(cx, cy, CW, CH);
+        c.fillStyle = !up ? '#6f9bff' : done ? '#c9efd6' : (bad ? '#ffd0d0' : '#fff'); c.fill();
+        c.lineWidth = 2.5; c.strokeStyle = '#1c1b22'; c.stroke();
+        c.textAlign = 'center';
+        if (up) { c.font = '34px sans-serif'; c.fillStyle = '#1c1b22'; c.fillText(MEMO_LAYOUT[i], cx + CW / 2, cy + CH / 2 + 12); }
+        else { c.font = '700 26px sans-serif'; c.fillStyle = 'rgba(255,255,255,.85)'; c.fillText('?', cx + CW / 2, cy + CH / 2 + 10); }
+        c.textAlign = 'left';
+      }
+      c.textAlign = 'center'; c.font = '700 14px sans-serif';
+      if (bad) { c.fillStyle = '#c9302c'; c.fillText(T('ちがった…  最初からやり直し'), W / 2, H - 10); }
+      else if (g.ok > now) { c.fillStyle = '#1fa971'; c.fillText(T('そろった！'), W / 2, H - 10); }
+      else { c.font = '12px sans-serif'; c.fillStyle = '#6b7f8f'; c.fillText(T('1回でもまちがえると、ぜんぶ裏返ります'), W / 2, H - 10); }
       c.textAlign = 'left';
-      if (g.over) overlay(W, H, `${g.score}てん でした`, 'タップでもう一度');
+      if (g.over) overlay(W, H, `${g.tries}回目で ぜんぶそろった！`, 'タップでもう一度');
     };
     raf = requestAnimationFrame(loop);
   }
@@ -113,10 +125,10 @@
   }
 
   function setup(W, H) { cv.width = W * 2; cv.height = H * 2; cv.style.aspectRatio = W + ' / ' + H; cv.style.maxWidth = Math.min(W * 1.4, 380) + 'px'; c = cv.getContext('2d'); c.setTransform(2, 0, 0, 2, 0, 0); c.textBaseline = 'alphabetic'; }
-  const GAMES = { jump: jumpGame, stop: stopGame, mole: moleGame };
+  const GAMES = { jump: jumpGame, memo: memoGame, mole: moleGame };
   root.MiniGame = {
     start(canvas, k) { this.stop(); cv = canvas; kind = k; (GAMES[k] || jumpGame)(); },
     stop() { clearAll(); },
-    kinds: ['jump', 'stop', 'mole'],
+    kinds: ['jump', 'memo', 'mole'],
   };
 })(window);
